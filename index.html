@@ -181,6 +181,8 @@ main{padding:14px 14px 40px;max-width:640px;margin:0 auto}
 .seff{font-size:14.5px;line-height:1.55;color:var(--text)}
 .item .ic .m{font-size:12px;color:var(--muted);line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 
+.jrow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid var(--line)}
+.jnote{font-size:11.5px;color:var(--faint);flex:1;min-width:140px}
 .wcard{background:var(--bg3);border:1px solid var(--line2);border-radius:12px;padding:12px;margin-bottom:12px}
 .wcard-h{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:10px}
 .wcard-h b{font-family:'Fraunces';font-size:17px}
@@ -593,7 +595,7 @@ function newCharacter(){
     id:uid(), name:"Nuevo personaje", cls:"", subclass:"", level:1, species:"", lineage:"", background:"", alignment:"", player:"",
     abilities:{str:10,dex:10,con:10,int:10,wis:10,cha:10},
     saveProf:{str:0,dex:0,con:0,int:0,wis:0,cha:0},
-    skillProf:{},
+    skillProf:{}, joat:0,
     ac:10, initMisc:0, speed:"9 m",
     hp:{current:8,max:8,temp:0}, hitDice:{die:"d8",total:1,current:1},
     death:{ok:0,fail:0},
@@ -615,7 +617,7 @@ function bardStarter(){
     name:"Mi Bardo", cls:"Bardo", subclass:"Colegio del Conocimiento", level:3, species:"", lineage:"", background:"Artista",
     abilities:{str:8,dex:14,con:13,int:10,wis:12,cha:16},
     saveProf:{str:0,dex:1,con:0,int:0,wis:0,cha:1},
-    skillProf:{persuasion:2,perception:1,deception:1,arcana:1,performance:1},
+    skillProf:{persuasion:2,perception:1,deception:1,arcana:1,performance:1}, joat:1,
     ac:12, speed:"9 m", castAbility:"cha",
     hp:{current:21,max:21,temp:0}, hitDice:{die:"d8",total:3,current:3},
   });
@@ -653,6 +655,7 @@ function load(){
   C = store.characters.find(c=>c.id===store.activeId);
   if(C && C.lineage===undefined) C.lineage="";
   store.characters.forEach(c=>{ if(!Array.isArray(c.weapons)) c.weapons=[]; });
+  store.characters.forEach(c=>{ if(c.joat===undefined) c.joat = (c.cls==="Bardo" && (+c.level||1)>=2) ? 1 : 0; });
   // limpiar notas automáticas antiguas (ahora la ficha muestra estos datos)
   const LEGACY=["Conc.","Acción adic.","3d6 daño","Sin conc.","3d8 área"];
   store.characters.forEach(c=>(c.spells||[]).forEach(s=>{ if(LEGACY.includes((s.note||"").trim())) s.note=""; }));
@@ -674,7 +677,10 @@ function toast(msg){ const t=$("#toast"); t.textContent=msg; t.classList.add("on
 /* ---------- Derived ---------- */
 const PB = ()=>pbFor(C.level);
 const saveBonus = a => mod(C.abilities[a]) + (C.saveProf[a]?PB():0);
-const skillBonus = k => { const sk=SKILLS.find(s=>s[0]===k); const p=C.skillProf[k]||0; return mod(C.abilities[sk[2]]) + p*PB(); };
+/* Toque de Todos los Oficios: +½ competencia (redondeo abajo) en pruebas SIN competencia */
+const joat = ()=> C.joat ? Math.floor(PB()/2) : 0;
+const skillBonus = k => { const sk=SKILLS.find(s=>s[0]===k); const p=C.skillProf[k]||0; return mod(C.abilities[sk[2]]) + p*PB() + (p===0?joat():0); };
+const initBonus = ()=> mod(C.abilities.dex) + (+C.initMisc||0) + joat();
 const spellDC = ()=> 8 + PB() + mod(C.abilities[C.castAbility]);
 const spellAtk = ()=> PB() + mod(C.abilities[C.castAbility]);
 const passivePerc = ()=> 10 + skillBonus("perception");
@@ -834,6 +840,13 @@ function tabCore(p){
   // Salvaciones con sus habilidades agrupadas
   const sk=el("div","card");
   sk.appendChild(el("div","card-h",'<span class="eyebrow">Salvaciones y habilidades</span><span class="muted-note">toca ⬚ comp/pericia</span>'));
+  const jm=cardMount(sk);
+  const jrow=el("div","jrow");
+  const jbtn=el("button","chip"+(C.joat?" on":""), (C.joat?"✓ ":"")+"Toque de Todos los Oficios");
+  jbtn.onclick=()=>{ C.joat = C.joat?0:1; save(); renderMain(); };
+  jrow.appendChild(jbtn);
+  jrow.appendChild(el("span","jnote", C.joat ? `+${Math.floor(PB()/2)} a las habilidades sin competencia y a la iniciativa` : "Rasgo de Bardo nivel 2. Desactivado."));
+  jm.appendChild(jrow);
   ABILS.forEach(([a])=>{
     const block=el("div"); block.style.marginBottom="10px";
     const sv=el("div","lrow"); sv.style.borderBottom="2px solid var(--line2)";
@@ -852,7 +865,7 @@ function tabCore(p){
       r.appendChild(el("div","bonus",fmt(skillBonus(k))));
       block.appendChild(r);
     });
-    sk.appendChild(block);
+    jm.appendChild(block);
   });
   p.appendChild(sk);
 }
@@ -882,7 +895,7 @@ function tabCombat(p){
   const strip=el("div","stat-strip");
   strip.innerHTML=`
     <div class="stat-pill"><div class="v gold">${C.ac}</div><div class="k">CA</div></div>
-    <div class="stat-pill"><div class="v">${fmt(mod(C.abilities.dex)+(+C.initMisc||0))}</div><div class="k">Iniciativa</div></div>
+    <div class="stat-pill"><div class="v">${fmt(initBonus())}</div><div class="k">Iniciativa</div></div>
     <div class="stat-pill"><div class="v" style="font-size:17px">${C.speed||"—"}</div><div class="k">Velocidad</div></div>`;
   strip.children[0].onclick=()=>editPrompt("Clase de Armadura",C.ac,v=>{C.ac=+v||0;});
   strip.children[2].onclick=()=>editPrompt("Velocidad",C.speed,v=>{C.speed=v;},true);
