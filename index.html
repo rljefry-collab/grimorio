@@ -1,0 +1,1426 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#14121C">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Grimorio">
+<title>Grimorio — Hoja de Personaje</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<style>
+:root{
+  --bg:#14121C; --bg2:#1C1A28; --bg3:#262336; --raised:#2E2B40;
+  --line:#322F44; --line2:#413D57;
+  --text:#ECEAF2; --muted:#9A96AC; --faint:#6E6A84;
+  --gold:#E3A857; --gold-dim:#8a6a34;
+  --violet:#8B7BE8; --violet-dim:#514a7a;
+  --crimson:#E5565B; --sage:#56B981;
+  --radius:14px; --radius-sm:10px;
+  --shadow:0 6px 24px rgba(0,0,0,.35);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{
+  background:var(--bg); color:var(--text);
+  font-family:'Inter',system-ui,sans-serif;
+  font-size:16px; line-height:1.4;
+  padding-bottom:env(safe-area-inset-bottom);
+  overscroll-behavior-y:none;
+}
+h1,h2,h3{font-family:'Fraunces',Georgia,serif;font-weight:600;margin:0}
+button{font-family:inherit;cursor:pointer;color:inherit;border:none;background:none}
+input,select,textarea{font-family:inherit;font-size:16px;color:var(--text)}
+input,select,textarea{
+  background:var(--bg); border:1px solid var(--line2); border-radius:var(--radius-sm);
+  padding:9px 11px; width:100%; outline:none; transition:border-color .15s;
+}
+input:focus,select,textarea:focus{border-color:var(--violet)}
+select{appearance:none;background-image:linear-gradient(45deg,transparent 50%,var(--muted) 50%),linear-gradient(135deg,var(--muted) 50%,transparent 50%);background-position:calc(100% - 16px) 55%,calc(100% - 11px) 55%;background-size:5px 5px;background-repeat:no-repeat;padding-right:32px}
+textarea{resize:vertical;min-height:90px;line-height:1.5}
+:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+label.fld{display:block}
+label.fld > span{display:block;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--faint);margin:0 0 4px 2px}
+
+/* ---------- Header ---------- */
+header{
+  position:sticky;top:0;z-index:30;
+  background:linear-gradient(180deg,rgba(20,18,28,.98),rgba(20,18,28,.92));
+  backdrop-filter:blur(8px);
+  border-bottom:1px solid var(--line);
+  padding:calc(env(safe-area-inset-top) + 10px) 14px 0;
+}
+.hd-top{display:flex;align-items:center;gap:10px;min-height:40px}
+.hd-emblem{width:38px;height:38px;flex:none;display:grid;place-items:center}
+.ci-emblem{width:34px;height:34px;flex:none}
+.ci-emblem .clsIcon{width:100%;height:100%;display:block}
+.ci-emblem:empty{display:none}
+.hd-emblem .clsIcon{width:100%;height:100%;display:block;filter:drop-shadow(0 0 5px currentColor)}
+.hd-name{flex:1;min-width:0}
+.hd-name h1{font-size:19px;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hd-name .sub{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hd-name .sub b{color:var(--gold);font-weight:600}
+.icon-btn{width:40px;height:40px;border-radius:10px;background:var(--bg3);display:grid;place-items:center;flex:none;border:1px solid var(--line)}
+.icon-btn:active{background:var(--raised)}
+.icon-btn svg{width:20px;height:20px;stroke:var(--text);fill:none;stroke-width:1.8}
+
+/* mini HP in header */
+.hp-mini{display:flex;align-items:center;gap:7px;background:var(--bg3);border:1px solid var(--line);border-radius:10px;padding:4px 9px;flex:none}
+.hp-mini .heart{width:15px;height:15px;fill:var(--crimson)}
+.hp-mini b{font-variant-numeric:tabular-nums;font-size:14px}
+.hp-mini small{color:var(--muted);font-size:12px}
+
+/* ---------- Tabs ---------- */
+nav.tabs{
+  position:sticky;top:0;z-index:20;
+  display:flex;gap:2px;overflow-x:auto;scrollbar-width:none;
+  background:var(--bg);border-bottom:1px solid var(--line);
+  padding:8px 10px;-webkit-overflow-scrolling:touch;
+}
+nav.tabs::-webkit-scrollbar{display:none}
+.tab{
+  flex:none;padding:7px 14px;border-radius:999px;font-size:13.5px;font-weight:600;
+  color:var(--muted);background:transparent;border:1px solid transparent;white-space:nowrap;
+  transition:all .15s;
+}
+.tab.active{color:var(--bg);background:var(--gold);}
+.tab:not(.active):active{background:var(--bg3)}
+
+main{padding:14px 14px 40px;max-width:640px;margin:0 auto}
+.tab-panel{animation:fade .25s ease}
+@keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* ---------- Cards ---------- */
+.card{background:var(--bg2);border:1px solid var(--line);border-radius:var(--radius);padding:15px;margin-bottom:13px;box-shadow:var(--shadow)}
+.card > .card-h{display:flex;align-items:center;justify-content:space-between;margin:-2px 0 13px}
+.card-h h2,.card-h h3{font-size:16px;letter-spacing:.01em}
+.card-h .eyebrow{font-family:'Inter';font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);font-weight:700}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.row{display:flex;gap:10px;align-items:flex-end}
+
+/* ability blocks */
+.abilities{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.abil{background:var(--bg3);border:1px solid var(--line);border-radius:var(--radius-sm);padding:11px 8px 9px;text-align:center;position:relative}
+.abil .nm{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.abil .mod{font-family:'Fraunces';font-size:30px;font-weight:600;line-height:1.05;color:var(--gold);margin-top:2px}
+.abil input{text-align:center;padding:5px;margin-top:6px;background:var(--bg);font-variant-numeric:tabular-nums;font-weight:600}
+
+/* stat pills row (PB, DC, etc.) */
+.stat-strip{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:13px}
+.stat-pill{background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:10px 6px;text-align:center}
+.stat-pill .v{font-family:'Fraunces';font-size:22px;font-weight:600;font-variant-numeric:tabular-nums}
+.stat-pill .v.violet{color:var(--violet)}.stat-pill .v.gold{color:var(--gold)}
+.stat-pill .k{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--faint);margin-top:2px}
+
+/* list rows: saves & skills */
+.lrow{display:flex;align-items:center;gap:10px;padding:8px 4px;border-bottom:1px solid var(--line)}
+.lrow:last-child{border-bottom:none}
+.lrow .prof{flex:none}
+.lrow .lbl{flex:1;font-size:14.5px}
+.lrow .lbl small{color:var(--faint);font-size:11px;margin-left:5px;text-transform:uppercase;letter-spacing:.05em}
+.lrow .bonus{font-variant-numeric:tabular-nums;font-weight:700;font-size:15px;min-width:34px;text-align:right;color:var(--gold)}
+/* prof toggle: none -> prof -> expertise */
+.prof{width:22px;height:22px;border-radius:6px;border:2px solid var(--line2);background:var(--bg);display:grid;place-items:center;font-size:11px;font-weight:800;color:var(--bg)}
+.prof[data-p="1"]{background:var(--violet);border-color:var(--violet)}
+.prof[data-p="2"]{background:var(--gold);border-color:var(--gold)}
+.prof[data-p="2"]::after{content:"E"}
+
+/* HP hero */
+.hp-hero{background:linear-gradient(135deg,#2a1820,#231a2a);border:1px solid #4a2b33;border-radius:var(--radius);padding:16px;margin-bottom:13px}
+.hp-hero .top{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:11px}
+.hp-hero .big{font-family:'Fraunces';font-size:15px;color:var(--crimson);font-weight:600;letter-spacing:.02em}
+.hp-nums{font-family:'Fraunces';font-variant-numeric:tabular-nums}
+.hp-nums .cur{font-size:38px;font-weight:700}
+.hp-nums .max{font-size:20px;color:var(--muted)}
+.hp-bar{height:9px;border-radius:6px;background:#3a2530;overflow:hidden;margin-bottom:12px}
+.hp-bar > i{display:block;height:100%;background:linear-gradient(90deg,var(--crimson),#ff7a80);transition:width .3s}
+.hp-ctrls{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.hp-in{display:flex;gap:6px;align-items:center;background:rgba(0,0,0,.25);border-radius:10px;padding:5px}
+.hp-in button{width:38px;height:38px;border-radius:8px;font-size:22px;font-weight:700;background:var(--bg3);flex:none}
+.hp-in button.heal{color:var(--sage)} .hp-in button.dmg{color:var(--crimson)}
+.hp-in button:active{background:var(--raised)}
+.hp-in input{text-align:center;font-weight:700;font-variant-numeric:tabular-nums;background:transparent;border:none;padding:0}
+.hp-sub{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:11px}
+
+/* pips (spell slots, resources, death saves) */
+.pips{display:flex;flex-wrap:wrap;gap:8px}
+.pip{width:30px;height:30px;border-radius:50%;border:2px solid var(--violet-dim);background:transparent;transition:all .15s;position:relative}
+.pip.filled{background:radial-gradient(circle at 35% 30%,#b6a6ff,var(--violet));border-color:var(--violet);box-shadow:0 0 10px rgba(139,123,232,.5)}
+.pip.gold{border-color:var(--gold-dim)} .pip.gold.filled{background:radial-gradient(circle at 35% 30%,#f5cd8f,var(--gold));border-color:var(--gold);box-shadow:0 0 10px rgba(227,168,87,.45)}
+.pip.death{border-color:#5a5a5a} .pip.death.filled{background:var(--crimson);border-color:var(--crimson);box-shadow:0 0 8px rgba(229,86,91,.5)}
+.pip.death.ok.filled{background:var(--sage);border-color:var(--sage);box-shadow:0 0 8px rgba(86,185,129,.5)}
+
+.slot-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--line)}
+.slot-row:last-child{border-bottom:none}
+.slot-row .lvl{font-family:'Fraunces';font-size:15px;font-weight:600;width:70px;flex:none;color:var(--violet)}
+
+/* spell / inventory list items */
+.item{display:flex;align-items:center;gap:10px;background:var(--bg3);border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:8px}
+.item .ic{flex:1;min-width:0}
+.item .ic .t{font-weight:600;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.item .ic .m{font-size:12px;color:var(--muted)}
+.item .del{width:30px;height:30px;border-radius:8px;background:var(--bg2);color:var(--crimson);font-size:18px;flex:none;display:grid;place-items:center}
+.info-btn{width:28px;height:28px;border-radius:50%;border:1.5px solid var(--violet-dim);background:var(--bg2);color:var(--violet);font-family:'Fraunces',serif;font-style:italic;font-weight:700;font-size:15px;line-height:1;flex:none;display:grid;place-items:center}
+.info-btn:active{background:var(--raised)}
+.item .del:active{background:var(--raised)}
+.tag{display:inline-block;font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--violet);border:1px solid var(--violet-dim);border-radius:5px;padding:1px 5px;margin-left:6px}
+
+/* weapon cards */
+/* spell info sheet */
+.sgrid{display:flex;flex-direction:column;gap:1px;background:var(--line);border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-bottom:12px}
+.sr{display:flex;background:var(--bg3);padding:9px 12px;gap:10px}
+.sk{font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--faint);width:104px;flex:none;padding-top:2px}
+.sv{font-size:14px;font-weight:600;flex:1}
+.sv.dmg{color:var(--crimson)}
+.seff{font-size:14.5px;line-height:1.55;color:var(--text)}
+.item .ic .m{font-size:12px;color:var(--muted);line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+
+.wcard{background:var(--bg3);border:1px solid var(--line2);border-radius:12px;padding:12px;margin-bottom:12px}
+.wcard-h{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:10px}
+.wcard-h b{font-family:'Fraunces';font-size:17px}
+.wcard-h small{color:var(--muted);font-size:12px;margin-left:4px}
+.wcat{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--faint);margin-top:2px}
+.wstats{display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+.wstat{flex:1;min-width:88px;background:var(--bg2);border:1px solid var(--line);border-radius:10px;padding:8px 6px;text-align:center}
+.wstat .wv{font-family:'Fraunces';font-size:18px;font-weight:600;font-variant-numeric:tabular-nums}
+.wstat .wv.gold{color:var(--gold)}
+.wstat .wk{font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--faint);margin-top:3px}
+.wprops{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:9px}
+.wtag{display:inline-block;font-size:11px;font-weight:600;color:var(--muted);border:1px solid var(--line2);border-radius:6px;padding:2px 7px;background:var(--bg2)}
+.wtag.violet{color:var(--violet);border-color:var(--violet-dim)}
+.wmastery{font-size:12px;color:var(--muted);line-height:1.4;margin-bottom:10px}
+.wmtext{color:var(--muted)}
+.wfoot{display:flex;align-items:center;gap:10px}
+.wmeta{font-size:11px;color:var(--faint);margin-left:auto}
+.chip{font-size:12px;font-weight:600;padding:5px 11px;border-radius:20px;background:var(--bg2);border:1px solid var(--line2);color:var(--muted)}
+.chip.on{background:var(--sage);border-color:var(--sage);color:#0c2417}
+
+.add-row{display:flex;gap:8px;margin-top:10px}
+.add-row input,.add-row select{flex:1}
+.btn{padding:10px 14px;border-radius:10px;font-weight:600;font-size:14px;background:var(--bg3);border:1px solid var(--line2);display:inline-flex;align-items:center;justify-content:center;gap:7px}
+.btn:active{background:var(--raised)}
+.btn.gold{background:var(--gold);color:#241a08;border-color:var(--gold)}
+.btn.violet{background:var(--violet);color:#160f2e;border-color:var(--violet)}
+.btn.ghost{background:transparent}
+.btn.wide{width:100%}
+.btn.sm{padding:7px 11px;font-size:13px}
+.btn svg{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:2}
+
+.currency{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+.coin{text-align:center}
+.coin .c{font-size:11px;font-weight:700;letter-spacing:.05em;margin-bottom:4px}
+.coin.cp .c{color:#c08457}.coin.sp .c{color:#c9ccd6}.coin.ep .c{color:#cfc07a}.coin.gp .c{color:var(--gold)}.coin.pp .c{color:#d6e4ee}
+.coin input{text-align:center;padding:7px 2px;font-variant-numeric:tabular-nums}
+
+.muted-note{font-size:12.5px;color:var(--muted);line-height:1.55}
+.divider{height:1px;background:var(--line);margin:14px 0}
+
+/* ---------- Sheet manager (bottom sheet) ---------- */
+.scrim{position:fixed;inset:0;background:rgba(8,7,12,.6);z-index:40;opacity:0;pointer-events:none;transition:opacity .2s;backdrop-filter:blur(2px)}
+.scrim.on{opacity:1;pointer-events:auto}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:41;background:var(--bg2);border-top:1px solid var(--line2);border-radius:20px 20px 0 0;padding:8px 16px calc(env(safe-area-inset-bottom) + 20px);transform:translateY(100%);transition:transform .25s cubic-bezier(.32,.72,0,1);max-height:85vh;overflow-y:auto}
+.sheet.on{transform:translateY(0)}
+.sheet .grab{width:38px;height:4px;border-radius:2px;background:var(--line2);margin:8px auto 14px}
+.sheet h2{font-size:18px;margin-bottom:14px}
+.char-item{display:flex;align-items:center;gap:12px;padding:12px;border-radius:12px;border:1px solid var(--line);background:var(--bg3);margin-bottom:9px}
+.char-item.active{border-color:var(--gold)}
+.char-item .ci-main{flex:1;min-width:0}
+.char-item .ci-main .nm{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.char-item .ci-main .mt{font-size:12px;color:var(--muted)}
+.char-item .mini{width:32px;height:32px;border-radius:8px;background:var(--bg2);color:var(--crimson);display:grid;place-items:center;font-size:17px;flex:none}
+
+/* sync status */
+.sync-badge{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);padding:3px 9px;border-radius:999px;border:1px solid var(--line);background:var(--bg3)}
+.sync-dot{width:8px;height:8px;border-radius:50%;background:var(--faint)}
+.sync-dot.on{background:var(--sage)} .sync-dot.sync{background:var(--gold);animation:pulse 1s infinite} .sync-dot.err{background:var(--crimson)}
+@keyframes pulse{50%{opacity:.3}}
+
+.toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 24px);transform:translateX(-50%) translateY(20px);background:var(--raised);border:1px solid var(--line2);color:var(--text);padding:11px 18px;border-radius:12px;font-size:14px;font-weight:500;box-shadow:var(--shadow);z-index:60;opacity:0;pointer-events:none;transition:all .25s;max-width:90vw}
+.toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="hd-top">
+    <button class="icon-btn" id="btnChars" aria-label="Cambiar personaje">
+      <svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+    </button>
+    <div class="hd-emblem" id="hEmblem"></div>
+    <div class="hd-name">
+      <h1 id="hName">—</h1>
+      <div class="sub" id="hSub"></div>
+    </div>
+    <div class="hp-mini" id="hpMini">
+      <svg class="heart" viewBox="0 0 24 24"><path d="M12 21s-7.5-4.9-10-9.5C.3 8 2 4.5 5.5 4.5c2 0 3.4 1.2 4.5 2.6 1.1-1.4 2.5-2.6 4.5-2.6C18 4.5 19.7 8 18 11.5 15.5 16.1 12 21 12 21z"/></svg>
+      <b id="hpMiniCur">0</b><small>/<span id="hpMiniMax">0</span></small>
+    </div>
+    <button class="icon-btn" id="btnMenu" aria-label="Ajustes y respaldo">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="5" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="12" cy="19" r="1.6"/></svg>
+    </button>
+  </div>
+  <nav class="tabs" id="tabs"></nav>
+</header>
+
+<main id="main"></main>
+
+<!-- Character manager sheet -->
+<div class="scrim" id="scrim"></div>
+<div class="sheet" id="charSheet">
+  <div class="grab"></div>
+  <h2>Mis personajes</h2>
+  <div id="charList"></div>
+  <button class="btn gold wide" id="btnNewChar" style="margin-top:6px">＋ Nuevo personaje</button>
+</div>
+
+<!-- Settings / backup sheet -->
+<div class="sheet" id="menuSheet">
+  <div class="grab"></div>
+  <h2>Respaldo y sincronización</h2>
+
+  <div class="card" style="box-shadow:none;margin-bottom:12px">
+    <div class="card-h"><h3>Google Drive</h3><span class="sync-badge"><span class="sync-dot" id="syncDot"></span><span id="syncTxt">Sin conectar</span></span></div>
+    <p class="muted-note" id="driveHelp">Pega tu <b>ID de cliente OAuth</b> (lo creas una vez, gratis) para que tu personaje se respalde solo en tu Drive. Requiere que la app esté publicada en internet (no funciona abriendo el archivo local).</p>
+    <label class="fld" style="margin-top:10px"><span>ID de cliente OAuth de Google</span>
+      <input id="clientId" placeholder="1234567890-abcdefg.apps.googleusercontent.com" autocomplete="off" spellcheck="false">
+    </label>
+    <div class="add-row">
+      <button class="btn violet" id="btnDriveConnect" style="flex:1">Conectar Drive</button>
+      <button class="btn ghost" id="btnDriveOff" style="flex:none">Desconectar</button>
+    </div>
+  </div>
+
+  <div class="card" style="box-shadow:none">
+    <div class="card-h"><h3>Respaldo manual</h3></div>
+    <p class="muted-note">Funciona siempre, aunque no tengas Drive. Baja o carga un archivo con <b>todos</b> tus personajes.</p>
+    <div class="add-row">
+      <button class="btn" id="btnExport" style="flex:1">↓ Exportar</button>
+      <button class="btn" id="btnImport" style="flex:1">↑ Importar</button>
+      <input type="file" id="fileImport" accept="application/json,.json" hidden>
+    </div>
+  </div>
+  <p class="muted-note" style="text-align:center;margin-top:16px">Grimorio · Hoja de personaje D&amp;D 5e (2024)</p>
+</div>
+
+<!-- Spell picker sheet -->
+<div class="sheet" id="pickerSheet">
+  <div class="grab"></div>
+  <h2 id="pickerHead">Añadir conjuro</h2>
+  <div id="pickerSearchWrap" style="margin-bottom:6px"><input id="pickerSearch" placeholder="Buscar por nombre…" autocomplete="off"></div>
+  <nav class="tabs" id="pickerChips" style="position:static;border:none;padding:8px 0;margin-bottom:4px"></nav>
+  <div id="pickerBody" style="max-height:50vh;overflow-y:auto;-webkit-overflow-scrolling:touch"></div>
+  <button class="btn wide gold" id="pickerClose" style="margin-top:12px">Listo</button>
+</div>
+
+<!-- Spell info sheet -->
+<div class="sheet" id="infoSheet">
+  <div class="grab"></div>
+  <h2 id="infoTitle" style="font-size:22px;margin-bottom:2px">—</h2>
+  <div id="infoMeta" style="color:var(--violet);font-size:13px;font-weight:600;margin-bottom:12px"></div>
+  <p id="infoBody" style="line-height:1.6;color:var(--text)"></p>
+  <p class="muted-note" style="margin-top:14px">Resumen breve para jugar. El texto completo y oficial está en tu manual.</p>
+  <button class="btn wide" id="infoClose" style="margin-top:12px">Cerrar</button>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+"use strict";
+/* ============================================================
+   GRIMORIO — Hoja de personaje D&D 5e 2024
+   Guardado local + exportar/importar + sync Google Drive
+   ============================================================ */
+
+const SKILLS = [
+  ["acrobatics","Acrobacias","dex"],["animal","Trato con Animales","wis"],
+  ["arcana","Conoc. Arcano","int"],["athletics","Atletismo","str"],
+  ["deception","Engaño","cha"],["history","Historia","int"],
+  ["insight","Perspicacia","wis"],["intimidation","Intimidación","cha"],
+  ["investigation","Investigación","int"],["medicine","Medicina","wis"],
+  ["nature","Naturaleza","int"],["perception","Percepción","wis"],
+  ["performance","Interpretación","cha"],["persuasion","Persuasión","cha"],
+  ["religion","Religión","int"],["sleight","Juego de Manos","dex"],
+  ["stealth","Sigilo","dex"],["survival","Supervivencia","wis"]
+];
+const ABILS = [["str","FUE"],["dex","DES"],["con","CON"],["int","INT"],["wis","SAB"],["cha","CAR"]];
+const ABIL_NAME = {str:"Fuerza",dex:"Destreza",con:"Constitución",int:"Inteligencia",wis:"Sabiduría",cha:"Carisma"};
+
+/* Clases y subclases del PHB 2024 */
+const CLASSES = {
+  "Bárbaro":["Senda del Berserker","Corazón Salvaje","Árbol del Mundo","Fanático"],
+  "Bardo":["Colegio de la Danza","Colegio del Glamour","Colegio del Conocimiento","Colegio del Valor"],
+  "Clérigo":["Dominio de la Vida","Dominio de la Luz","Dominio del Engaño","Dominio de la Guerra"],
+  "Druida":["Círculo de la Tierra","Círculo de la Luna","Círculo del Mar","Círculo de las Estrellas"],
+  "Guerrero":["Maestro de Batalla","Campeón","Caballero Arcano","Guerrero Psíquico"],
+  "Monje":["Guerrero de los Elementos","Guerrero de la Misericordia","Guerrero de la Mano Abierta","Guerrero de la Sombra"],
+  "Paladín":["Juramento de Devoción","Juramento de Gloria","Juramento de los Ancianos","Juramento de Venganza"],
+  "Explorador":["Maestro de Bestias","Caminante Feérico","Acechador de la Penumbra","Cazador"],
+  "Pícaro":["Embaucador Arcano","Asesino","Cuchilla Psíquica","Ladrón"],
+  "Hechicero":["Hechicería Aberrante","Hechicería del Mecanismo","Hechicería Dracónica","Magia Salvaje"],
+  "Brujo":["El Archifey","El Celestial","El Diablo","El Gran Antiguo"],
+  "Mago":["Abjurador","Adivino","Evocador","Ilusionista"]
+};
+
+/* 10 especies del PHB 2024. grants = magias raciales (cantrips + leveled con nivel requerido) */
+const SPECIES = {
+  "Aasimar":{grants:{cantrips:["Light"],leveled:[]}},
+  "Dracónido":{},
+  "Enano":{},
+  "Elfo":{lineages:{
+    "Alto Elfo":{grants:{cantrips:["Prestidigitation"],leveled:[{name:"Detect Magic",lvl:1,req:3},{name:"Misty Step",lvl:2,req:5}]}},
+    "Elfo del Bosque":{grants:{cantrips:["Druidcraft"],leveled:[{name:"Longstrider",lvl:1,req:3},{name:"Pass without Trace",lvl:2,req:5}]}},
+    "Drow":{grants:{cantrips:["Dancing Lights"],leveled:[{name:"Faerie Fire",lvl:1,req:3},{name:"Darkness",lvl:2,req:5}]}}
+  }},
+  "Gnomo":{lineages:{
+    "Gnomo del Bosque":{grants:{cantrips:["Minor Illusion"],leveled:[{name:"Speak with Animals",lvl:1,req:1}]}},
+    "Gnomo de las Rocas":{grants:{cantrips:["Mending","Prestidigitation"],leveled:[]}}
+  }},
+  "Goliat":{},
+  "Mediano":{},
+  "Humano":{},
+  "Orco":{},
+  "Tiefling":{grants:{cantrips:["Thaumaturgy"],leveled:[]}, lineages:{
+    "Abisal":{grants:{cantrips:["Poison Spray"],leveled:[{name:"Ray of Sickness",lvl:1,req:3},{name:"Hold Person",lvl:2,req:5}]}},
+    "Ctónico":{grants:{cantrips:["Chill Touch"],leveled:[{name:"False Life",lvl:1,req:3},{name:"Ray of Enfeeblement",lvl:2,req:5}]}},
+    "Infernal":{grants:{cantrips:["Fire Bolt"],leveled:[{name:"Hellish Rebuke",lvl:1,req:3},{name:"Darkness",lvl:2,req:5}]}}
+  }}
+};
+
+/* Resúmenes propios (qué hace, en breve). No es el texto del manual. c=concentración, r=ritual */
+/* SPELL_INFO: datos verificados del PHB 2024 (del PDF de Jeffry).
+   a=acción  r=alcance  d=duración  c=concentración  ri=ritual
+   t=qué se tira  dm=daño/curación  e=efecto (resumen propio) */
+const SPELL_INFO = {
+/* ===== TRUCOS ===== */
+"Blade Ward":{a:"Acción",r:"Personal",d:"Conc. 1 min",c:1,t:"—",dm:"",e:"Quien te ataque resta 1d4 a su tirada de ataque. No hace daño: es defensa pura."},
+"Dancing Lights":{a:"Acción",r:"36 m (120 pies)",d:"Conc. 1 min",c:1,t:"—",dm:"",e:"Creas hasta 4 luces flotantes tipo antorcha (o una figura humanoide luminosa). Solo ilumina; no daña."},
+"Friends":{a:"Acción",r:"3 m (10 pies)",d:"Conc. 1 min",c:1,t:"Salv. SAB",dm:"",e:"Un humanoide que falle queda Encantado contigo. Al terminar, sabe que lo hechizaste (puede enojarse)."},
+"Light":{a:"Acción",r:"Toque",d:"1 hora",c:0,t:"—",dm:"",e:"Un objeto emite luz brillante en 6 m y tenue 6 m más. Sin daño."},
+"Mage Hand":{a:"Acción",r:"9 m (30 pies)",d:"1 min",c:0,t:"—",dm:"",e:"Mano espectral que manipula objetos, abre puertas o guarda cosas (hasta 5 kg). No ataca ni daña."},
+"Mending":{a:"1 minuto",r:"Toque",d:"Instantáneo",c:0,t:"—",dm:"",e:"Repara una rotura de hasta 30 cm (cadena, llave partida, capa rasgada). Utilidad, sin daño."},
+"Message":{a:"Acción",r:"36 m (120 pies)",d:"1 asalto",c:0,t:"—",dm:"",e:"Susurras un mensaje a una criatura; solo ella lo oye y puede responderte en susurro. Sin daño."},
+"Minor Illusion":{a:"Acción",r:"9 m (30 pies)",d:"1 min",c:0,t:"—",dm:"",e:"Creas un sonido o la imagen de un objeto. Quien lo Estudie e investigue puede detectar la ilusión. Sin daño."},
+"Prestidigitation":{a:"Acción",r:"3 m (10 pies)",d:"Hasta 1 hora",c:0,t:"—",dm:"",e:"Efectos menores: chispas, encender/apagar una vela, ensuciar o limpiar, sabor, marca. Sin daño."},
+"Poison Spray":{a:"Acción",r:"9 m (30 pies)",d:"Instantáneo",c:0,t:"Ataque a distancia",dm:"1d12 veneno",e:"SÍ HACE DAÑO. Tiras ataque mágico; si impactas, 1d12 de veneno. Sube a 2d12 (nv 5), 3d12 (11), 4d12 (17)."},
+"Starry Wisp":{a:"Acción",r:"18 m (60 pies)",d:"Instantáneo",c:0,t:"Ataque a distancia",dm:"1d8 radiante",e:"SÍ HACE DAÑO. Si impactas: 1d8 radiante y el objetivo brilla (luz tenue 3 m) hasta tu próximo turno, así no puede esconderse. Sube a 2d8 (nv 5), 3d8 (11), 4d8 (17)."},
+"Thunderclap":{a:"Acción",r:"Personal (1,5 m)",d:"Instantáneo",c:0,t:"Salv. CON",dm:"1d6 trueno",e:"SÍ HACE DAÑO. Estallido a tu alrededor: cada criatura a 1,5 m que falle la salvación recibe 1d6 de trueno. Sube a 2d6 (nv 5), 3d6 (11), 4d6 (17). Se oye a 30 m: no sirve para sigilo."},
+"Thaumaturgy":{a:"Acción",r:"9 m (30 pies)",d:"Hasta 1 min",c:0,t:"—",dm:"",e:"Prodigio menor: voz atronadora, ojos alterados, temblor, llamas que cambian de color. Puro teatro, sin daño."},
+"True Strike":{a:"Acción",r:"Personal",d:"Instantáneo",c:0,t:"Ataque con arma",dm:"Daño del arma",e:"SÍ HACE DAÑO. Atacas con tu arma pero usando CARISMA en lugar de FUE/DES, y puedes elegir que el daño sea radiante. A nivel 5 suma +1d6 (2d6 a nv 11, 3d6 a nv 17)."},
+"Vicious Mockery":{a:"Acción",r:"18 m (60 pies)",d:"Instantáneo",c:0,t:"Salv. SAB",dm:"1d6 psíquico",e:"SÍ HACE DAÑO. Insulto mágico: si falla la salvación, 1d6 psíquico y Desventaja en su siguiente ataque. Sube a 2d6 (nv 5), 3d6 (11), 4d6 (17)."},
+"Chill Touch":{a:"Acción",r:"Toque",d:"Instantáneo",c:0,t:"Ataque cuerpo a cuerpo",dm:"1d10 necrótico",e:"SÍ HACE DAÑO. Ataque mágico al contacto: 1d10 necrótico y no puede recuperar PV hasta tu próximo turno. Sube a 2d10 (nv 5), 3d10 (11), 4d10 (17)."},
+"Fire Bolt":{a:"Acción",r:"36 m (120 pies)",d:"Instantáneo",c:0,t:"Ataque a distancia",dm:"1d10 fuego",e:"SÍ HACE DAÑO. Ataque mágico a distancia: 1d10 de fuego. Sube a 2d10 (nv 5), 3d10 (11), 4d10 (17)."},
+"Druidcraft":{a:"Acción",r:"9 m (30 pies)",d:"Instantáneo",c:0,t:"—",dm:"",e:"Efectos naturales menores: predecir el clima 24 h, hacer florecer una planta, apagar/encender una llamita. Sin daño."},
+
+/* ===== NIVEL 1 ===== */
+"Animal Friendship":{a:"Acción",r:"9 m (30 pies)",d:"24 horas",c:0,t:"Salv. SAB",dm:"",e:"Una Bestia que falle queda Encantada 24 h. Si tú o un aliado la dañan, el efecto termina. Sin daño."},
+"Bane":{a:"Acción",r:"9 m (30 pies)",d:"Conc. 1 min",c:1,t:"Salv. CAR",dm:"",e:"Hasta 3 criaturas que fallen restan 1d4 a CADA ataque y salvación que hagan. No daña, pero hunde su puntería. Ojo: usa concentración."},
+"Charm Person":{a:"Acción",r:"9 m (30 pies)",d:"1 hora",c:0,t:"Salv. SAB",dm:"",e:"Un humanoide que falle queda Encantado 1 h (te trata como amigo). Tiene Ventaja en la salvación si estás peleando contra él. Termina si lo dañan. Sabrá que lo hechizaste."},
+"Color Spray":{a:"Acción",r:"Personal (cono 4,5 m)",d:"Instantáneo",c:0,t:"Salv. CON",dm:"",e:"Cono de luz: quien falle queda CIEGO hasta el final de tu próximo turno. Estar Cegado = Desventaja en sus ataques y Ventaja para atacarlo. No hace daño."},
+"Command":{a:"Acción",r:"18 m (60 pies)",d:"Instantáneo",c:0,t:"Salv. SAB",dm:"",e:"Orden de una palabra: si falla, la obedece en su próximo turno (Acércate, Suelta, Huye, Túmbate, Detente). Sin daño."},
+"Comprehend Languages":{a:"Acción / Ritual",r:"Personal",d:"1 hora",c:0,ri:1,t:"—",dm:"",e:"Entiendes cualquier idioma que oigas y cualquier texto que toques. Utilidad. Ritual: gratis si tienes 10 min."},
+"Cure Wounds":{a:"Acción",r:"Toque",d:"Instantáneo",c:0,t:"—",dm:"Cura 2d8 + CAR",e:"CURA. Tocas a alguien y recupera 2d8 + tu modificador de Carisma. +2d8 por cada nivel de espacio extra."},
+"Detect Magic":{a:"Acción / Ritual",r:"Personal (9 m)",d:"Conc. 10 min",c:1,ri:1,t:"—",dm:"",e:"Percibes magia a 9 m y puedes ver el aura y su escuela. Utilidad. Ritual: gratis si tienes 10 min."},
+"Disguise Self":{a:"Acción",r:"Personal",d:"1 hora",c:0,t:"—",dm:"",e:"Cambias tu apariencia (ropa, armadura, altura ±30 cm). Es ilusión: al tocarte se nota. Sin daño."},
+"Dissonant Whispers":{a:"Acción",r:"18 m (60 pies)",d:"Instantáneo",c:0,t:"Salv. SAB",dm:"3d6 psíquico",e:"SÍ HACE DAÑO, y fuerte. Si falla: 3d6 psíquico Y debe usar su Reacción para huir de ti lo más lejos posible. Si supera: mitad de daño y no huye. +1d6 por nivel extra. Tu mejor daño de nivel 1."},
+"Faerie Fire":{a:"Acción",r:"18 m (60 pies)",d:"Conc. 1 min",c:1,t:"Salv. DES",dm:"",e:"Cubo de 6 m: quien falle queda delineado en luz. Todos los ataques contra él tienen VENTAJA y no puede estar Invisible. No daña, pero es brutal para el grupo."},
+"False Life":{a:"Acción",r:"Personal",d:"Instantáneo",c:0,t:"—",dm:"2d4+4 PV temporales",e:"Ganas 2d4 + 4 puntos de vida temporales (escudo extra). +5 por nivel de espacio extra."},
+"Feather Fall":{a:"Reacción (al caer)",r:"18 m (60 pies)",d:"1 min",c:0,t:"—",dm:"",e:"Reacción cuando alguien cae: hasta 5 criaturas descienden lento y NO reciben daño por la caída."},
+"Healing Word":{a:"Acción adicional",r:"18 m (60 pies)",d:"Instantáneo",c:0,t:"—",dm:"Cura 2d4 + CAR",e:"CURA A DISTANCIA con Acción adicional: 2d4 + tu Carisma. Sirve para levantar a un aliado caído sin gastar tu acción. +2d4 por nivel extra."},
+"Heroism":{a:"Acción",r:"Toque",d:"Conc. 1 min",c:1,t:"—",dm:"PV temp. = CAR/turno",e:"El aliado es inmune a Asustado y gana PV temporales iguales a tu Carisma AL INICIO DE CADA TURNO suyo. No daña."},
+"Identify":{a:"1 min / Ritual",r:"Toque",d:"Instantáneo",c:0,ri:1,t:"—",dm:"",e:"Aprendes qué hace un objeto mágico, si necesita Sintonización y cuántas cargas tiene. Ritual: gratis."},
+"Illusory Script":{a:"1 min / Ritual",r:"Toque",d:"10 días",c:0,ri:1,t:"—",dm:"",e:"Escribes un texto que solo leen quienes tú elijas; los demás ven otra cosa. Sin daño."},
+"Longstrider":{a:"Acción",r:"Toque",d:"1 hora",c:0,t:"—",dm:"",e:"+3 m de Velocidad durante 1 hora. Un objetivo más por cada nivel de espacio extra."},
+"Silent Image":{a:"Acción",r:"18 m (60 pies)",d:"Conc. 10 min",c:1,t:"—",dm:"",e:"Ilusión visual de hasta 4,5 m (sin sonido ni olor) que puedes mover. Quien la Estudie la descubre. Sin daño."},
+"Sleep":{a:"Acción",r:"18 m (60 pies)",d:"Conc. 1 min",c:1,t:"Salv. SAB",dm:"",e:"Esfera de 1,5 m: quien falle queda INCAPACITADO (no actúa) hasta el final de su turno, y repite la salvación. En 2024 ya no duerme sin salvación. Sin daño."},
+"Speak with Animals":{a:"Acción / Ritual",r:"Personal",d:"10 min",c:0,ri:1,t:"—",dm:"",e:"Hablas con Bestias y puedes usar Influencia con ellas. Ritual: gratis."},
+"Tasha's Hideous Laughter":{a:"Acción",r:"9 m (30 pies)",d:"Conc. 1 min",c:1,t:"Salv. SAB",dm:"",e:"Si falla: queda DERRIBADO e INCAPACITADO (no actúa) de la risa. Repite la salvación al final de cada turno o si recibe daño. No daña, pero neutraliza a un enemigo."},
+"Thunderwave":{a:"Acción",r:"Personal (cubo 4,5 m)",d:"Instantáneo",c:0,t:"Salv. CON",dm:"2d8 trueno",e:"SÍ HACE DAÑO. Onda desde ti: 2d8 de trueno y los empuja 3 m. Si superan: mitad de daño, sin empujón. +1d8 por nivel extra."},
+"Unseen Servant":{a:"Acción / Ritual",r:"18 m (60 pies)",d:"1 hora",c:0,ri:1,t:"—",dm:"",e:"Sirviente invisible que hace tareas simples (cargar, abrir, limpiar). CA 10, 1 PV. Sin daño."},
+"Hellish Rebuke":{a:"Reacción (te dañaron)",r:"18 m (60 pies)",d:"Instantáneo",c:0,t:"Salv. DES",dm:"2d10 fuego",e:"SÍ HACE DAÑO. REACCIÓN: quien te hirió arde. Salv. DES o 2d10 de fuego (mitad si la supera). +1d10 por nivel extra."},
+"Ray of Sickness":{a:"Acción",r:"18 m (60 pies)",d:"Instantáneo",c:0,t:"Ataque a distancia",dm:"2d8 veneno",e:"SÍ HACE DAÑO. Si impactas: 2d8 de veneno y queda ENVENENADO (Desventaja en ataques y pruebas) hasta el final de tu próximo turno."},
+
+/* ===== NIVEL 2 ===== */
+"Aid":{a:"Acción",r:"9 m (30 pies)",d:"8 horas",c:0,t:"—",dm:"+5 PV máx.",e:"Hasta 3 criaturas suben su máximo de PV y sus PV actuales en 5, por 8 horas. +5 más por cada nivel extra."},
+"Animal Messenger":{a:"Acción / Ritual",r:"9 m (30 pies)",d:"24 horas",c:0,ri:1,t:"Salv. CAR",dm:"",e:"Una Bestia diminuta lleva tu mensaje a un lugar que conozcas. Utilidad, sin daño."},
+"Blindness/Deafness":{a:"Acción",r:"36 m (120 pies)",d:"1 min",c:0,t:"Salv. CON",dm:"",e:"NO hace daño. Si falla: queda CIEGO o SORDO (tú eliges). Cegado = Desventaja en sus ataques y Ventaja para atacarlo. Repite la salvación al final de cada turno suyo. NO usa concentración (por eso combina bien con Bane)."},
+"Calm Emotions":{a:"Acción",r:"18 m (60 pies)",d:"Conc. 1 min",c:1,t:"Salv. CAR",dm:"",e:"Esfera de 6 m: los humanoides que fallen o se vuelven inmunes a Encantado/Asustado, o se calman y dejan de ser hostiles. Sin daño."},
+"Cloud of Daggers":{a:"Acción",r:"18 m (60 pies)",d:"Conc. 1 min",c:1,t:"— (sin salvación)",dm:"4d4 cortante",e:"SÍ HACE DAÑO, y AUTOMÁTICO: cubo de 1,5 m de dagas giratorias. Todo el que esté dentro, entre o termine su turno ahí recibe 4d4 sin tirada. +2d4 por nivel extra."},
+"Crown of Madness":{a:"Acción",r:"36 m (120 pies)",d:"Conc. 1 min",c:1,t:"Salv. SAB",dm:"",e:"Un humanoide que falle queda Encantado y debe atacar a una criatura que tú elijas en su turno. Sin daño directo."},
+"Darkness":{a:"Acción",r:"18 m (60 pies)",d:"Conc. 10 min",c:1,t:"—",dm:"",e:"Esfera de 4,5 m de oscuridad mágica: ni la Visión en la Oscuridad la atraviesa. Sin daño."},
+"Detect Thoughts":{a:"Acción",r:"Personal (9 m)",d:"Conc. 1 min",c:1,t:"—",dm:"",e:"Lees pensamientos superficiales a 9 m; puedes profundizar (la criatura puede resistirse). Sin daño."},
+"Enhance Ability":{a:"Acción",r:"Toque",d:"Conc. 1 hora",c:1,t:"—",dm:"",e:"El objetivo tiene VENTAJA en las pruebas de una característica que elijas. No afecta ataques ni salvaciones. Sin daño."},
+"Enlarge/Reduce":{a:"Acción",r:"9 m (30 pies)",d:"Conc. 1 min",c:1,t:"Salv. CON",dm:"±1d4 daño",e:"Agrandar: +1d4 al daño de sus armas y Ventaja en pruebas de FUE. Reducir: −1d4 al daño y Desventaja. Un enemigo puede resistirse con salv. CON."},
+"Enthrall":{a:"Acción",r:"18 m (60 pies)",d:"Conc. 1 min",c:1,t:"Salv. SAB",dm:"",e:"Quien falle sufre −10 a Percepción (y a su Percepción pasiva): no te ve venir. Ideal para que el grupo se escabulla. Sin daño."},
+"Heat Metal":{a:"Acción",r:"18 m (60 pies)",d:"Conc. 1 min",c:1,t:"Salv. CON",dm:"2d8 fuego",e:"SÍ HACE DAÑO. Calientas un objeto metálico (arma o armadura): quien lo toque recibe 2d8 de fuego, y en tus turnos siguientes puedes repetirlo con una acción adicional. Si falla la salv. CON, suelta el objeto."},
+"Hold Person":{a:"Acción",r:"18 m (60 pies)",d:"Conc. 1 min",c:1,t:"Salv. SAB",dm:"",e:"Un humanoide que falle queda PARALIZADO: no actúa, falla salvaciones de FUE/DES, y los ataques a 1,5 m contra él son CRÍTICOS automáticos. Repite la salvación cada turno. No daña, pero es demoledor."},
+"Invisibility":{a:"Acción",r:"Toque",d:"Conc. 1 hora",c:1,t:"—",dm:"",e:"El objetivo queda INVISIBLE. Se rompe en cuanto ataca, hace daño o lanza un conjuro. Sin daño."},
+"Knock":{a:"Acción",r:"18 m (60 pies)",d:"Instantáneo",c:0,t:"—",dm:"",e:"Abre una cerradura, puerta atrancada o grilletes. Hace un estruendo audible a 90 m. Sin daño."},
+"Lesser Restoration":{a:"Acción adicional",r:"Toque",d:"Instantáneo",c:0,t:"—",dm:"",e:"Quita UNA condición: Cegado, Ensordecido, Paralizado o Envenenado. Con Acción adicional. Sin daño."},
+"Locate Animals or Plants":{a:"Acción / Ritual",r:"Personal",d:"Instantáneo",c:0,ri:1,t:"—",dm:"",e:"Sabes dirección y distancia de la bestia o planta más cercana de un tipo (hasta 8 km). Sin daño."},
+"Locate Object":{a:"Acción",r:"Personal (300 m)",d:"Conc. 10 min",c:1,t:"—",dm:"",e:"Sientes la dirección de un objeto conocido si está a menos de 300 m. Sin daño."},
+"Magic Mouth":{a:"1 min / Ritual",r:"9 m (30 pies)",d:"Hasta disiparse",c:0,ri:1,t:"—",dm:"",e:"Grabas un mensaje (25 palabras) en un objeto; se recita cuando se cumpla un disparador. Sin daño."},
+"Mirror Image":{a:"Acción",r:"Personal",d:"1 min",c:0,t:"—",dm:"",e:"3 duplicados ilusorios tuyos. Cada ataque enemigo puede golpear una copia en vez de a ti. Defensa fuerte, sin concentración."},
+"Phantasmal Force":{a:"Acción",r:"18 m (60 pies)",d:"Conc. 1 min",c:1,t:"Salv. INT",dm:"1d6 psíquico",e:"SÍ HACE DAÑO. Ilusión metida en su mente: si falla, la cree real y recibe 1d6 psíquico por turno si la ilusión podría dañarlo."},
+"See Invisibility":{a:"Acción",r:"Personal",d:"1 hora",c:0,t:"—",dm:"",e:"Ves criaturas y objetos invisibles, y el Plano Etéreo. Sin daño."},
+"Shatter":{a:"Acción",r:"18 m (60 pies)",d:"Instantáneo",c:0,t:"Salv. CON",dm:"3d8 trueno",e:"SÍ HACE DAÑO EN ÁREA. Esfera de 3 m: 3d8 de trueno a todos los que fallen (mitad si superan). Tu mejor daño de área. +1d8 por nivel extra."},
+"Silence":{a:"Acción / Ritual",r:"36 m (120 pies)",d:"Conc. 10 min",c:1,ri:1,t:"—",dm:"",e:"Esfera de 6 m sin sonido: dentro nadie puede lanzar conjuros con componente verbal. Anula magos enemigos. Sin daño."},
+"Suggestion":{a:"Acción",r:"9 m (30 pies)",d:"Conc. 8 horas",c:1,t:"Salv. SAB",dm:"",e:"Sugieres una acción razonable (máx. 25 palabras) y si falla, la cumple. No puede ser algo obviamente dañino para él. Sin daño."},
+"Zone of Truth":{a:"Acción",r:"18 m (60 pies)",d:"10 min",c:0,t:"Salv. CAR",dm:"",e:"Esfera de 4,5 m: quien falle NO puede decir mentiras deliberadas. Tú sabes quién superó la salvación. Sin concentración. Sin daño."},
+"Misty Step":{a:"Acción adicional",r:"Personal",d:"Instantáneo",c:0,t:"—",dm:"",e:"Te teletransportas hasta 9 m a un espacio que veas. Con Acción adicional: escape perfecto."},
+"Pass without Trace":{a:"Acción",r:"Personal (9 m)",d:"Conc. 1 hora",c:1,t:"—",dm:"",e:"Tú y los aliados cerca ganan +10 a Sigilo y no dejan rastro. Sin daño."},
+"Ray of Enfeeblement":{a:"Acción",r:"18 m (60 pies)",d:"Conc. 1 min",c:1,t:"Salv. CON",dm:"−1d8 a su daño",e:"NO hace daño. Si falla: Desventaja en pruebas de FUE y resta 1d8 al daño de todos sus ataques. Si supera: solo Desventaja en su siguiente ataque."}
+};
+
+const SPELL_LISTS = {"Bardo":{"0":["Blade Ward","Dancing Lights","Friends","Light","Mage Hand","Mending","Message","Minor Illusion","Prestidigitation","Starry Wisp","Thunderclap","True Strike","Vicious Mockery"],"1":["Animal Friendship","Bane","Charm Person","Color Spray","Command","Comprehend Languages","Cure Wounds","Detect Magic","Disguise Self","Dissonant Whispers","Faerie Fire","Feather Fall","Healing Word","Heroism","Identify","Illusory Script","Longstrider","Silent Image","Sleep","Speak with Animals","Tasha's Hideous Laughter","Thunderwave","Unseen Servant"],"2":["Aid","Animal Messenger","Blindness/Deafness","Calm Emotions","Cloud of Daggers","Crown of Madness","Detect Thoughts","Enhance Ability","Enlarge/Reduce","Enthrall","Heat Metal","Hold Person","Invisibility","Knock","Lesser Restoration","Locate Animals or Plants","Locate Object","Magic Mouth","Mirror Image","Phantasmal Force","See Invisibility","Shatter","Silence","Suggestion","Zone of Truth"],"3":["Bestow Curse","Clairvoyance","Dispel Magic","Fear","Feign Death","Glyph of Warding","Hypnotic Pattern","Leomund's Tiny Hut","Major Image","Mass Healing Word","Nondetection","Plant Growth","Sending","Slow","Speak with Dead","Speak with Plants","Stinking Cloud","Tongues"],"4":["Charm Monster","Compulsion","Confusion","Dimension Door","Fount of Moonlight","Freedom of Movement","Greater Invisibility","Hallucinatory Terrain","Locate Creature","Phantasmal Killer","Polymorph"],"5":["Animate Objects","Dominate Person","Dream","Geas","Greater Restoration","Hold Monster","Legend Lore","Mass Cure Wounds","Mislead","Modify Memory","Planar Binding","Raise Dead","Rary's Telepathic Bond","Scrying","Seeming","Synaptic Static","Teleportation Circle","Yolande's Regal Presence"],"6":["Eyebite","Find the Path","Guards and Wards","Heroes' Feast","Mass Suggestion","Otto's Irresistible Dance","Programmed Illusion","True Seeing"],"7":["Etherealness","Forcecage","Mirage Arcane","Mordenkainen's Magnificent Mansion","Mordenkainen's Sword","Power Word Fortify","Prismatic Spray","Project Image","Regenerate","Resurrection","Symbol","Teleport"],"8":["Antipathy/Sympathy","Befuddlement","Dominate Monster","Glibness","Mind Blank","Power Word Stun"],"9":["Foresight","Power Word Heal","Power Word Kill","Prismatic Wall","True Polymorph"]},"Clérigo":{"0":["Guidance","Light","Mending","Resistance","Sacred Flame","Spare the Dying","Thaumaturgy","Toll the Dead","Word of Radiance"],"1":["Bane","Bless","Command","Create or Destroy Water","Cure Wounds","Detect Evil and Good","Detect Magic","Detect Poison and Disease","Guiding Bolt","Healing Word","Inflict Wounds","Protection from Evil and Good","Purify Food and Drink","Sanctuary","Shield of Faith"],"2":["Aid","Augury","Blindness/Deafness","Calm Emotions","Continual Flame","Enhance Ability","Find Traps","Gentle Repose","Hold Person","Lesser Restoration","Locate Object","Prayer of Healing","Protection from Poison","Silence","Spiritual Weapon","Warding Bond","Zone of Truth"],"3":["Animate Dead","Aura of Vitality","Beacon of Hope","Bestow Curse","Clairvoyance","Create Food and Water","Daylight","Dispel Magic","Feign Death","Glyph of Warding","Magic Circle","Mass Healing Word","Meld into Stone","Protection from Energy","Remove Curse","Revivify","Sending","Speak with Dead","Spirit Guardians","Tongues","Water Walk"],"4":["Aura of Life","Aura of Purity","Banishment","Control Water","Death Ward","Freedom of Movement","Guardian of Faith","Locate Creature","Stone Shape"],"5":["Circle of Power","Commune","Contagion","Dispel Evil and Good","Flame Strike","Greater Restoration","Insect Plague","Legend Lore","Mass Cure Wounds","Planar Binding","Raise Dead","Scrying","Summon Celestial"],"6":["Blade Barrier","Create Undead","Find the Path","Forbiddance","Harm","Heal","Heroes' Feast","Planar Ally","Sunbeam","True Seeing","Word of Recall"]},"Druida":{"0":["Druidcraft","Elementalism","Guidance","Mending","Message","Poison Spray","Produce Flame","Resistance","Shillelagh","Spare the Dying","Starry Wisp","Thorn Whip","Thunderclap"],"1":["Animal Friendship","Charm Person","Create or Destroy Water","Cure Wounds","Detect Magic","Detect Poison and Disease","Entangle","Faerie Fire","Fog Cloud","Goodberry","Healing Word","Ice Knife","Jump","Longstrider","Protection from Evil and Good","Purify Food and Drink","Speak with Animals","Thunderwave"],"2":["Aid","Animal Messenger","Augury","Barkskin","Beast Sense","Continual Flame","Darkvision","Enhance Ability","Enlarge/Reduce","Find Traps","Flame Blade","Flaming Sphere","Gust of Wind","Heat Metal","Hold Person","Lesser Restoration","Locate Animals or Plants","Locate Object","Moonbeam","Pass without Trace","Protection from Poison","Spike Growth","Summon Beast"],"3":["Aura of Vitality","Call Lightning","Conjure Animals","Daylight","Dispel Magic","Elemental Weapon","Feign Death","Meld into Stone","Plant Growth","Protection from Energy","Revivify","Sleet Storm","Speak with Plants","Summon Fey","Water Breathing","Water Walk","Wind Wall"],"4":["Blight","Charm Monster","Confusion","Conjure Minor Elementals","Conjure Woodland Beings","Control Water","Dominate Beast","Fire Shield","Fount of Moonlight","Freedom of Movement","Giant Insect","Grasping Vine","Hallucinatory Terrain","Ice Storm","Locate Creature","Polymorph","Stone Shape","Stoneskin","Summon Elemental","Wall of Fire"]},"Paladín":{"1":["Bless","Command","Compelled Duel","Cure Wounds","Detect Evil and Good","Detect Magic","Detect Poison and Disease","Divine Favor","Divine Smite","Heroism","Protection from Evil and Good","Purify Food and Drink","Searing Smite","Shield of Faith","Thunderous Smite","Wrathful Smite"],"2":["Aid","Find Steed","Gentle Repose","Lesser Restoration","Locate Object","Magic Weapon","Prayer of Healing","Protection from Poison","Shining Smite","Warding Bond","Zone of Truth"],"3":["Aura of Vitality","Blinding Smite","Create Food and Water","Crusader's Mantle","Daylight","Dispel Magic","Elemental Weapon","Magic Circle","Remove Curse","Revivify"],"4":["Aura of Life","Aura of Purity","Banishment","Death Ward","Locate Creature","Staggering Smite"],"5":["Banishing Smite","Circle of Power","Destructive Wave","Dispel Evil and Good","Greater Restoration","Raise Dead","Summon Celestial"]},"Explorador":{"1":["Alarm","Animal Friendship","Cure Wounds","Detect Magic","Detect Poison and Disease","Ensnaring Strike","Entangle","Fog Cloud","Goodberry","Hail of Thorns","Hunter's Mark","Jump","Longstrider","Speak with Animals"],"2":["Aid","Animal Messenger","Barkskin","Beast Sense","Cordon of Arrows","Darkvision","Enhance Ability","Find Traps","Gust of Wind","Lesser Restoration","Locate Animals or Plants","Locate Object","Magic Weapon","Pass without Trace","Protection from Poison","Silence","Spike Growth","Summon Beast"],"3":["Conjure Animals","Conjure Barrage","Daylight","Dispel Magic","Elemental Weapon","Lightning Arrow","Meld into Stone","Nondetection","Plant Growth","Protection from Energy","Revivify","Speak with Plants","Summon Fey","Water Breathing","Water Walk","Wind Wall"],"4":["Conjure Woodland Beings","Dominate Beast","Freedom of Movement","Grasping Vine","Locate Creature","Stoneskin","Summon Elemental"],"5":["Commune with Nature","Greater Restoration","Steel Wind Strike","Swift Quiver"]},"Hechicero":{"0":["Acid Splash","Blade Ward","Chill Touch","Dancing Lights","Elementalism","Fire Bolt","Friends","Light","Mage Hand","Mending","Message","Mind Sliver","Minor Illusion","Poison Spray","Prestidigitation","Ray of Frost","Shocking Grasp","Sorcerous Burst","Thunderclap","True Strike"],"1":["Burning Hands","Charm Person","Chromatic Orb","Color Spray","Detect Magic","Disguise Self","Expeditious Retreat","False Life","Feather Fall","Fog Cloud","Grease","Ice Knife","Jump","Mage Armor","Magic Missile","Ray of Sickness","Shield","Silent Image","Sleep","Thunderwave","Witch Bolt"],"2":["Alter Self","Arcane Vigor","Blur","Cloud of Daggers","Crown of Madness","Darkness","Darkvision","Detect Thoughts","Enhance Ability","Enlarge/Reduce","Flame Blade","Flaming Sphere","Gust of Wind","Hold Person","Invisibility","Knock","Levitate","Magic Weapon","Mirror Image","Misty Step","Phantasmal Force","Scorching Ray","See Invisibility","Shatter","Spider Climb","Suggestion","Web"],"3":["Blink","Clairvoyance","Counterspell","Daylight","Dispel Magic","Fear"]},"Brujo":{"0":["Blade Ward","Chill Touch","Friends","Mage Hand","Mind Sliver","Minor Illusion","Poison Spray","Prestidigitation","Thunderclap","Toll the Dead"],"1":["Armor of Agathys","Arms of Hadar","Bane","Charm Person","Comprehend Languages","Detect Magic","Expeditious Retreat","Hellish Rebuke","Hex","Illusory Script","Protection from Evil and Good","Speak with Animals","Tasha's Hideous Laughter","Unseen Servant","Witch Bolt"],"2":["Cloud of Daggers","Crown of Madness","Darkness","Enthrall","Hold Person","Invisibility","Mirror Image","Misty Step","Ray of Enfeeblement","Spider Climb","Suggestion"],"3":["Counterspell","Dispel Magic","Fear","Fly","Gaseous Form","Hunger of Hadar","Hypnotic Pattern","Magic Circle","Major Image","Remove Curse","Summon Undead","Tongues","Vampiric Touch"],"4":["Banishment","Blight","Charm Monster","Dimension Door","Hallucinatory Terrain","Summon Aberration"],"5":["Contact Other Plane","Dream","Hold Monster","Mislead","Planar Binding","Scrying","Seeming","Summon Fiend","Synaptic Static","Teleportation Circle"],"6":["Arcane Gate","Circle of Death","Create Undead","Eyebite"]},"Mago":{"0":["Acid Splash","Blade Ward","Chill Touch","Dancing Lights","Elementalism","Fire Bolt","Friends","Light","Mage Hand","Mending","Message","Mind Sliver","Minor Illusion","Poison Spray","Prestidigitation","Ray of Frost","Shocking Grasp","Thunderclap","Toll the Dead","True Strike"],"1":["Alarm","Burning Hands","Charm Person","Chromatic Orb","Color Spray","Comprehend Languages","Detect Magic","Disguise Self","Expeditious Retreat","False Life","Feather Fall","Find Familiar","Fog Cloud","Grease","Ice Knife","Identify","Illusory Script","Jump","Longstrider","Mage Armor","Magic Missile","Protection from Evil and Good","Ray of Sickness","Shield","Silent Image","Sleep","Tasha's Hideous Laughter","Tenser's Floating Disk","Thunderwave","Unseen Servant","Witch Bolt"],"2":["Alter Self","Arcane Vigor","Augury","Blindness/Deafness","Blur","Cloud of Daggers","Continual Flame","Crown of Madness","Darkness","Darkvision","Detect Thoughts","Enhance Ability","Enlarge/Reduce","Flaming Sphere","Gentle Repose","Gust of Wind","Hold Person","Invisibility","Knock","Levitate","Locate Object","Magic Mouth","Magic Weapon","Mirror Image","Misty Step","Nystul's Magic Aura","Phantasmal Force","Ray of Enfeeblement","Scorching Ray","See Invisibility","Shatter","Spider Climb","Suggestion","Web"],"3":["Animate Dead","Bestow Curse","Blink","Clairvoyance","Counterspell","Dispel Magic","Fear","Feign Death","Fireball","Gaseous Form","Glyph of Warding","Haste","Hypnotic Pattern","Leomund's Tiny Hut","Lightning Bolt","Magic Circle","Major Image","Nondetection","Phantom Steed","Protection from Energy","Remove Curse","Sending","Sleet Storm","Slow","Speak with Dead","Stinking Cloud","Summon Fey","Summon Undead","Tongues","Vampiric Touch","Water Breathing"],"4":["Arcane Eye","Banishment","Blight","Charm Monster","Confusion","Conjure Minor Elementals","Control Water","Dimension Door","Evard's Black Tentacles","Fabricate","Fire Shield","Greater Invisibility","Hallucinatory Terrain","Ice Storm","Locate Creature","Mordenkainen's Faithful Hound","Mordenkainen's Private Sanctum","Otiluke's Resilient Sphere","Phantasmal Killer","Polymorph","Stone Shape","Stoneskin","Summon Aberration","Summon Construct","Summon Elemental","Vitriolic Sphere","Wall of Fire"],"5":["Animate Objects","Bigby's Hand","Circle of Power","Cloudkill","Cone of Cold","Conjure Elemental","Contact Other Plane","Creation","Dominate Person","Dream","Geas","Hold Monster","Jallarzi's Storm of Radiance","Legend Lore","Mislead","Modify Memory","Passwall","Planar Binding","Rary's Telepathic Bond","Scrying","Seeming","Steel Wind Strike","Summon Dragon","Summon Fiend","Synaptic Static","Telekinesis","Teleportation Circle","Wall of Force","Wall of Stone","Yolande's Regal Presence"],"6":["Arcane Gate","Chain Lightning","Circle of Death","Contingency","Create Undead","Disintegrate","Drawmij's Instant Summons","Eyebite","Flesh to Stone","Globe of Invulnerability","Guards and Wards","Magic Jar","Mass Suggestion","Move Earth","Otiluke's Freezing Sphere","Otto's Irresistible Dance","Programmed Illusion","Sunbeam","Tasha's Bubbling Cauldron","True Seeing","Wall of Ice"],"7":["Delayed Blast Fireball","Etherealness","Finger of Death","Forcecage","Mirage Arcane","Mordenkainen's Magnificent Mansion","Mordenkainen's Sword","Plane Shift","Prismatic Spray","Project Image"]}};
+
+
+/* ---------- Armas (PHB 2024, p217) ---------- */
+const MASTERY_INFO = {
+  "Cleave":"Hendir — al impactar cuerpo a cuerpo, haces un ataque extra contra otro enemigo a 1,5 m del primero (sin sumar tu modificador a ese daño). 1 vez por turno.",
+  "Graze":"Rozar — si tu ataque falla, igual infliges daño igual al modificador de característica que usaste.",
+  "Nick":"Tajo rápido — el ataque extra de la propiedad Ligera lo haces dentro de la acción de Ataque, sin gastar tu acción adicional. 1 vez por turno.",
+  "Push":"Empujar — al impactar, empujas al objetivo hasta 3 m en línea recta si es Grande o menor.",
+  "Sap":"Debilitar — al impactar, el objetivo tiene Desventaja en su próximo ataque antes de tu siguiente turno.",
+  "Slow":"Ralentizar — al impactar y hacer daño, reduces su Velocidad 3 m hasta tu próximo turno.",
+  "Topple":"Derribar — al impactar, el objetivo hace salvación de Constitución (CD 8 + mod + comp.) o cae Derribado.",
+  "Vex":"Acosar — al impactar y hacer daño, ganas Ventaja en tu siguiente ataque contra ese objetivo antes de tu próximo turno."
+};
+const PROP_INFO = {
+  "Sutileza":"Usas Fuerza o Destreza (la que sea mayor) para el ataque y el daño.",
+  "Ligera":"Facilita atacar con dos armas.",
+  "Arrojadiza":"Puedes lanzarla para un ataque a distancia; la sacas como parte del ataque.",
+  "Versátil":"Puedes usarla a una o dos manos; a dos manos hace el daño entre paréntesis.",
+  "Alcance":"Suma 1,5 m a tu alcance al atacar y en ataques de oportunidad.",
+  "Pesada":"Si eres Pequeño o tu característica es baja para el arma, tienes Desventaja al atacar con ella.",
+  "A dos manos":"Requiere dos manos para atacar.",
+  "Recarga":"Solo disparas un proyectil por acción, acción adicional o reacción.",
+  "Munición":"Requiere munición; el rango va entre paréntesis (normal/largo, en pies)."
+};
+const WEAPONS = {
+ "Club":{es:"Garrote",cat:"Cuerpo a cuerpo simple",dmg:"1d4",type:"Contundente",props:["Ligera"],mastery:"Slow",wt:"1 kg",cost:"1 PP"},
+ "Dagger":{es:"Daga",cat:"Cuerpo a cuerpo simple",dmg:"1d4",type:"Perforante",props:["Sutileza","Ligera","Arrojadiza (6/18 m)"],mastery:"Nick",wt:"0,5 kg",cost:"2 PO"},
+ "Greatclub":{es:"Garrote grande",cat:"Cuerpo a cuerpo simple",dmg:"1d8",type:"Contundente",props:["A dos manos"],mastery:"Push",wt:"5 kg",cost:"2 PP"},
+ "Handaxe":{es:"Hacha de mano",cat:"Cuerpo a cuerpo simple",dmg:"1d6",type:"Cortante",props:["Ligera","Arrojadiza (6/18 m)"],mastery:"Vex",wt:"1 kg",cost:"5 PO"},
+ "Javelin":{es:"Jabalina",cat:"Cuerpo a cuerpo simple",dmg:"1d6",type:"Perforante",props:["Arrojadiza (9/36 m)"],mastery:"Slow",wt:"1 kg",cost:"5 PP"},
+ "Light Hammer":{es:"Martillo ligero",cat:"Cuerpo a cuerpo simple",dmg:"1d4",type:"Contundente",props:["Ligera","Arrojadiza (6/18 m)"],mastery:"Nick",wt:"1 kg",cost:"2 PO"},
+ "Mace":{es:"Maza",cat:"Cuerpo a cuerpo simple",dmg:"1d6",type:"Contundente",props:[],mastery:"Sap",wt:"2 kg",cost:"5 PO"},
+ "Quarterstaff":{es:"Bastón",cat:"Cuerpo a cuerpo simple",dmg:"1d6",type:"Contundente",props:["Versátil (1d8)"],mastery:"Topple",wt:"2 kg",cost:"2 PP"},
+ "Sickle":{es:"Hoz",cat:"Cuerpo a cuerpo simple",dmg:"1d4",type:"Cortante",props:["Ligera"],mastery:"Nick",wt:"1 kg",cost:"1 PO"},
+ "Spear":{es:"Lanza",cat:"Cuerpo a cuerpo simple",dmg:"1d6",type:"Perforante",props:["Arrojadiza (6/18 m)","Versátil (1d8)"],mastery:"Sap",wt:"1,5 kg",cost:"1 PO"},
+ "Dart":{es:"Dardo",cat:"A distancia simple",dmg:"1d4",type:"Perforante",props:["Sutileza","Arrojadiza (6/18 m)"],mastery:"Vex",wt:"0,1 kg",cost:"5 PC"},
+ "Light Crossbow":{es:"Ballesta ligera",cat:"A distancia simple",dmg:"1d8",type:"Perforante",props:["Munición (24/96 m)","Recarga","A dos manos"],mastery:"Slow",wt:"2,5 kg",cost:"25 PO"},
+ "Shortbow":{es:"Arco corto",cat:"A distancia simple",dmg:"1d6",type:"Perforante",props:["Munición (24/96 m)","A dos manos"],mastery:"Vex",wt:"1 kg",cost:"25 PO"},
+ "Sling":{es:"Honda",cat:"A distancia simple",dmg:"1d4",type:"Contundente",props:["Munición (9/36 m)"],mastery:"Slow",wt:"—",cost:"1 PP"},
+ "Battleaxe":{es:"Hacha de batalla",cat:"Cuerpo a cuerpo marcial",dmg:"1d8",type:"Cortante",props:["Versátil (1d10)"],mastery:"Topple",wt:"2 kg",cost:"10 PO"},
+ "Flail":{es:"Mangual",cat:"Cuerpo a cuerpo marcial",dmg:"1d8",type:"Contundente",props:[],mastery:"Sap",wt:"1 kg",cost:"10 PO"},
+ "Glaive":{es:"Guja",cat:"Cuerpo a cuerpo marcial",dmg:"1d10",type:"Cortante",props:["Pesada","Alcance","A dos manos"],mastery:"Graze",wt:"3 kg",cost:"20 PO"},
+ "Greataxe":{es:"Hacha grande",cat:"Cuerpo a cuerpo marcial",dmg:"1d12",type:"Cortante",props:["Pesada","A dos manos"],mastery:"Cleave",wt:"3,5 kg",cost:"30 PO"},
+ "Greatsword":{es:"Espadón",cat:"Cuerpo a cuerpo marcial",dmg:"2d6",type:"Cortante",props:["Pesada","A dos manos"],mastery:"Graze",wt:"3 kg",cost:"50 PO"},
+ "Halberd":{es:"Alabarda",cat:"Cuerpo a cuerpo marcial",dmg:"1d10",type:"Cortante",props:["Pesada","Alcance","A dos manos"],mastery:"Cleave",wt:"3 kg",cost:"20 PO"},
+ "Lance":{es:"Lanza de caballería",cat:"Cuerpo a cuerpo marcial",dmg:"1d10",type:"Perforante",props:["Pesada","Alcance","A dos manos (salvo montado)"],mastery:"Topple",wt:"3 kg",cost:"10 PO"},
+ "Longsword":{es:"Espada larga",cat:"Cuerpo a cuerpo marcial",dmg:"1d8",type:"Cortante",props:["Versátil (1d10)"],mastery:"Sap",wt:"1,5 kg",cost:"15 PO"},
+ "Maul":{es:"Mazo",cat:"Cuerpo a cuerpo marcial",dmg:"2d6",type:"Contundente",props:["Pesada","A dos manos"],mastery:"Topple",wt:"5 kg",cost:"10 PO"},
+ "Morningstar":{es:"Estrella de la mañana",cat:"Cuerpo a cuerpo marcial",dmg:"1d8",type:"Perforante",props:[],mastery:"Sap",wt:"2 kg",cost:"15 PO"},
+ "Pike":{es:"Pica",cat:"Cuerpo a cuerpo marcial",dmg:"1d10",type:"Perforante",props:["Pesada","Alcance","A dos manos"],mastery:"Push",wt:"8 kg",cost:"5 PO"},
+ "Rapier":{es:"Estoque",cat:"Cuerpo a cuerpo marcial",dmg:"1d8",type:"Perforante",props:["Sutileza"],mastery:"Vex",wt:"1 kg",cost:"25 PO"},
+ "Scimitar":{es:"Cimitarra",cat:"Cuerpo a cuerpo marcial",dmg:"1d6",type:"Cortante",props:["Sutileza","Ligera"],mastery:"Nick",wt:"1,5 kg",cost:"25 PO"},
+ "Shortsword":{es:"Espada corta",cat:"Cuerpo a cuerpo marcial",dmg:"1d6",type:"Perforante",props:["Sutileza","Ligera"],mastery:"Vex",wt:"1 kg",cost:"10 PO"},
+ "Trident":{es:"Tridente",cat:"Cuerpo a cuerpo marcial",dmg:"1d8",type:"Perforante",props:["Arrojadiza (6/18 m)","Versátil (1d10)"],mastery:"Topple",wt:"2 kg",cost:"5 PO"},
+ "Warhammer":{es:"Martillo de guerra",cat:"Cuerpo a cuerpo marcial",dmg:"1d8",type:"Contundente",props:["Versátil (1d10)"],mastery:"Push",wt:"2,5 kg",cost:"15 PO"},
+ "War Pick":{es:"Pico de guerra",cat:"Cuerpo a cuerpo marcial",dmg:"1d8",type:"Perforante",props:["Versátil (1d10)"],mastery:"Sap",wt:"1 kg",cost:"5 PO"},
+ "Whip":{es:"Látigo",cat:"Cuerpo a cuerpo marcial",dmg:"1d4",type:"Cortante",props:["Sutileza","Alcance"],mastery:"Slow",wt:"1,5 kg",cost:"2 PO"},
+ "Blowgun":{es:"Cerbatana",cat:"A distancia marcial",dmg:"1",type:"Perforante",props:["Munición (7,5/30 m)","Recarga"],mastery:"Vex",wt:"0,5 kg",cost:"10 PO"},
+ "Hand Crossbow":{es:"Ballesta de mano",cat:"A distancia marcial",dmg:"1d6",type:"Perforante",props:["Munición (9/36 m)","Ligera","Recarga"],mastery:"Vex",wt:"1,5 kg",cost:"75 PO"},
+ "Heavy Crossbow":{es:"Ballesta pesada",cat:"A distancia marcial",dmg:"1d10",type:"Perforante",props:["Munición (30/120 m)","Pesada","Recarga","A dos manos"],mastery:"Push",wt:"8 kg",cost:"50 PO"},
+ "Longbow":{es:"Arco largo",cat:"A distancia marcial",dmg:"1d8",type:"Perforante",props:["Munición (45/180 m)","Pesada","A dos manos"],mastery:"Slow",wt:"1 kg",cost:"50 PO"},
+ "Musket":{es:"Mosquete",cat:"A distancia marcial",dmg:"1d12",type:"Perforante",props:["Munición (12/36 m)","Recarga","A dos manos"],mastery:"Slow",wt:"5 kg",cost:"500 PO"},
+ "Pistol":{es:"Pistola",cat:"A distancia marcial",dmg:"1d10",type:"Perforante",props:["Munición (9/27 m)","Recarga"],mastery:"Vex",wt:"1,5 kg",cost:"250 PO"}
+};
+const WEAPON_CATS = ["Cuerpo a cuerpo simple","A distancia simple","Cuerpo a cuerpo marcial","A distancia marcial"];
+
+function weaponCalc(name, prof){
+  const w = WEAPONS[name]; if(!w) return null;
+  const finesse = w.props.some(p=>p.startsWith("Sutileza"));
+  const ranged = w.cat.indexOf("distancia")>=0;
+  let ab;
+  if(finesse) ab = (mod(C.abilities.str) >= mod(C.abilities.dex)) ? "str" : "dex";
+  else if(ranged) ab = "dex";
+  else ab = "str";
+  const abMod = mod(C.abilities[ab]);
+  const atk = abMod + (prof?PB():0);
+  const vp = w.props.find(p=>p.startsWith("Versátil"));
+  const vers = vp ? vp.replace(/[^0-9d]/g,"") : null;
+  return {ab, abMod, atk, vers};
+}
+
+
+/* ---------- Emblemas de clase (SVG originales, estilo line-art) ---------- */
+const CLASS_ICONS = {
+ "Bardo":{c:"#E8639B",s:`<circle cx="32" cy="42" r="11"/><circle cx="32" cy="42" r="3.4"/><path d="M32 31V10"/><path d="M27.5 10h9M28.5 15h7"/><path d="M23 44c1.5-4 1.5-7 0-11M41 44c-1.5-4-1.5-7 0-11"/><path d="M15 13v7.5"/><circle cx="13" cy="21" r="2"/><path d="M15 13l4.5-1.4"/><path d="M49 13v7.5"/><circle cx="47" cy="21" r="2"/><path d="M49 13l4.5-1.4"/><path d="M17 30c-2 2-3 5-3 8M47 30c2 2 3 5 3 8"/>`},
+ "Bárbaro":{c:"#E5565B",s:`<path d="M19.5 50L44 18M44.5 50L20 18"/><path d="M44 18.5c4 .5 6.5 3.5 6.8 7.5-4 .6-7.6-1-9.5-4.2z"/><path d="M20 18.5c-4 .5-6.5 3.5-6.8 7.5 4 .6 7.6-1 9.5-4.2z"/><path d="M25 13c-3-2.5-6.5-2.5-8.5 0 1 3.2 3.4 5.2 6.5 5.4M39 13c3-2.5 6.5-2.5 8.5 0-1 3.2-3.4 5.2-6.5 5.4"/><circle cx="32" cy="34" r="4.5"/><path d="M32 38.5V54"/><path d="M27 54h10"/>`},
+ "Clérigo":{c:"#E3C04E",s:`<path d="M32 12v40"/><path d="M22 24h20"/><circle cx="32" cy="14" r="4"/><path d="M22 30c-6-.5-11 1.5-14.5 6 5 2.5 10.5 2.5 14.5.5M42 30c6-.5 11 1.5 14.5 6-5 2.5-10.5 2.5-14.5.5"/><path d="M22 50c3 4 7 6 10 6s7-2 10-6"/><path d="M27 52c-1.5-2-3.5-3-6-3M37 52c1.5-2 3.5-3 6-3"/>`},
+ "Druida":{c:"#7FA83E",s:`<path d="M32 50c-6.5 0-11-3.4-11-7.6 0-4 4.5-6.4 11-6.4s11 2.4 11 6.4c0 4.2-4.5 7.6-11 7.6z"/><ellipse cx="20" cy="28" rx="3.4" ry="4.6"/><ellipse cx="27.5" cy="22" rx="3.4" ry="5"/><ellipse cx="36.5" cy="22" rx="3.4" ry="5"/><ellipse cx="44" cy="28" rx="3.4" ry="4.6"/><path d="M13 42c-3-1-5-3.5-5.5-7 3.5-.5 6.5 1 8 4"/><path d="M51 42c3-1 5-3.5 5.5-7-3.5-.5-6.5 1-8 4"/><path d="M20 56h24"/>`},
+ "Guerrero":{c:"#A9AEB8",s:`<path d="M32 7l3.5 7v20L32 41l-3.5-7V14z"/><path d="M22 41h20"/><path d="M32 41v10"/><circle cx="32" cy="53.5" r="2.8"/><path d="M14 20c-2 6-2 14 0 20M50 20c2 6 2 14 0 20"/><path d="M14 20l7 4M50 20l-7 4M14 40l7-4M50 40l-7-4"/>`},
+ "Monje":{c:"#8B8FE8",s:`<circle cx="32" cy="27" r="15"/><path d="M25 30v-6a2.5 2.5 0 015 0v6M30 30v-7a2.5 2.5 0 015 0v7M35 30v-5a2.5 2.5 0 015 0v5"/><path d="M25 30h15v3a7.5 7.5 0 01-15 0z"/><path d="M32 48c-4-3-7-3-10 0 3 4 7 5 10 3 3 2 7 1 10-3-3-3-6-3-10 0z"/><path d="M32 51v5"/>`},
+ "Paladín":{c:"#F0993E",s:`<path d="M32 8l16 6v14c0 11-7 18.5-16 22-9-3.5-16-11-16-22V14z"/><path d="M32 19v22M24 28h16"/><path d="M11 18l-3-3M53 18l3-3M10 34H6M54 34h4"/>`},
+ "Explorador":{c:"#6FBF9B",s:`<path d="M20 10c9 7 9 37 0 44"/><path d="M20 10v44"/><path d="M17 32h30"/><path d="M41 26l7 6-7 6"/><path d="M17 32l-5-4M17 32l-5 4"/><path d="M50 46c4 1 7 4 8 8-4 1-8-.5-10-4z"/><path d="M50 46c-1-4 .5-8 4-10 2 4 1.5 8-1 11"/>`},
+ "Pícaro":{c:"#D19A4E",s:`<path d="M32 6l3 5v17l-3 4-3-4V11z"/><path d="M25 32h14"/><path d="M32 32v6"/><path d="M22 52a10 10 0 0120 0v4H22z"/><circle cx="27" cy="49" r="2.6"/><circle cx="37" cy="49" r="2.6"/><path d="M30 56v-2M34 56v-2"/><path d="M14 22l-4-3M50 22l4-3"/>`},
+ "Hechicero":{c:"#F06E5A",s:`<circle cx="32" cy="32" r="7"/><path d="M32 32c-6-4-4-13 3-14M32 32c6 4 4 13-3 14"/><path d="M32 15V6M32 58v-9M15 32H6M58 32h-9"/><path d="M20 20l-6-6M44 44l6 6M44 20l6-6M20 44l-6 6"/><path d="M29 29l6 6M35 29l-6 6"/>`},
+ "Brujo":{c:"#A25FD6",s:`<path d="M10 32c7-10 37-10 44 0-7 10-37 10-44 0z"/><circle cx="32" cy="32" r="6"/><circle cx="32" cy="32" r="1.8"/><path d="M18 44c-2 4-1 8 2 10M46 44c2 4 1 8-2 10M32 46c0 5-1 8-3 10M32 46c0 5 1 8 3 10"/><path d="M32 16V8"/><path d="M27 12l5 4 5-4"/>`},
+ "Mago":{c:"#4FA8C7",s:`<path d="M13 18h38v28H13z"/><path d="M32 18v28"/><path d="M13 18l4-4h30l4 4"/><circle cx="32" cy="32" r="7"/><path d="M32 25.5l1.9 5.8h6.1l-4.9 3.6 1.9 5.8-5-3.6-5 3.6 1.9-5.8-4.9-3.6h6.1z"/><path d="M9 12l2 3 3-2M55 12l-2 3-3-2M9 52l2-3 3 2M55 52l-2-3-3 2"/>`}
+};
+function classIcon(cls){
+  const ic = CLASS_ICONS[cls];
+  if(!ic) return "";
+  return `<svg class="clsIcon" viewBox="0 0 64 64" fill="none" stroke="${ic.c}" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <circle cx="32" cy="32" r="30" stroke-dasharray="2 4" opacity=".4"/>${ic.s}</svg>`;
+}
+
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,7);
+const clamp = (n,a,b)=>Math.max(a,Math.min(b,n));
+const mod = s => Math.floor(((+s||10)-10)/2);
+const fmt = n => (n>=0?"+":"")+n;
+const pbFor = lvl => Math.ceil(clamp(+lvl||1,1,20)/4)+1;
+
+function newCharacter(){
+  return {
+    id:uid(), name:"Nuevo personaje", cls:"", subclass:"", level:1, species:"", lineage:"", background:"", alignment:"", player:"",
+    abilities:{str:10,dex:10,con:10,int:10,wis:10,cha:10},
+    saveProf:{str:0,dex:0,con:0,int:0,wis:0,cha:0},
+    skillProf:{},
+    ac:10, initMisc:0, speed:"9 m",
+    hp:{current:8,max:8,temp:0}, hitDice:{die:"d8",total:1,current:1},
+    death:{ok:0,fail:0},
+    castAbility:"cha",
+    slots:{1:{max:0,used:0},2:{max:0,used:0},3:{max:0,used:0},4:{max:0,used:0},5:{max:0,used:0},6:{max:0,used:0},7:{max:0,used:0},8:{max:0,used:0},9:{max:0,used:0}},
+    cantrips:[], spells:[],
+    resources:[],
+    weapons:[],
+    features:"", inventory:"", notes:"",
+    currency:{cp:0,sp:0,ep:0,gp:0,pp:0},
+    updatedAt:Date.now()
+  };
+}
+
+/* Bardo del Conocimiento nivel 3 pre-cargado */
+function bardStarter(){
+  const c = newCharacter();
+  Object.assign(c,{
+    name:"Mi Bardo", cls:"Bardo", subclass:"Colegio del Conocimiento", level:3, species:"", lineage:"", background:"Artista",
+    abilities:{str:8,dex:14,con:13,int:10,wis:12,cha:16},
+    saveProf:{str:0,dex:1,con:0,int:0,wis:0,cha:1},
+    skillProf:{persuasion:2,perception:1,deception:1,arcana:1,performance:1},
+    ac:12, speed:"9 m", castAbility:"cha",
+    hp:{current:21,max:21,temp:0}, hitDice:{die:"d8",total:3,current:3},
+  });
+  c.slots[1]={max:4,used:0}; c.slots[2]={max:2,used:0};
+  c.cantrips=[{name:"True Strike"},{name:"Starry Wisp"}];
+  c.spells=[
+    {name:"Bane",level:1,note:""},
+    {name:"Healing Word",level:1,note:""},
+    {name:"Dissonant Whispers",level:1,note:""},
+    {name:"Blindness/Deafness",level:2,note:""},
+    {name:"Shatter",level:2,note:""}
+  ];
+  c.resources=[{name:"Inspiración Bárdica",die:"d6",max:3,used:0}];
+  c.features="Colegio del Conocimiento (Nv.3): Competencias extra (3 hab.) y Palabras Cortantes.\nInspiración Bárdica (d6). Pericia (Nv.2).";
+  return c;
+}
+
+/* ---------- Persistencia ---------- */
+const LS = "grimorio_v1";
+let store = { characters:[], activeId:null, driveClientId:"", driveFileId:null };
+let C = null;               // personaje activo
+let currentTab = "core";
+
+function load(){
+  try{
+    const raw = localStorage.getItem(LS);
+    if(raw){ store = JSON.parse(raw); }
+  }catch(e){ console.warn("load fail",e); }
+  if(!store.characters || !store.characters.length){
+    const b = bardStarter();
+    store.characters = [b]; store.activeId = b.id;
+  }
+  if(!store.activeId || !store.characters.find(c=>c.id===store.activeId))
+    store.activeId = store.characters[0].id;
+  C = store.characters.find(c=>c.id===store.activeId);
+  if(C && C.lineage===undefined) C.lineage="";
+  store.characters.forEach(c=>{ if(!Array.isArray(c.weapons)) c.weapons=[]; });
+  // limpiar notas automáticas antiguas (ahora la ficha muestra estos datos)
+  const LEGACY=["Conc.","Acción adic.","3d6 daño","Sin conc.","3d8 área"];
+  store.characters.forEach(c=>(c.spells||[]).forEach(s=>{ if(LEGACY.includes((s.note||"").trim())) s.note=""; }));
+  if(C) applyRacialSpells();
+  if(store.driveClientId) $("#clientId").value = store.driveClientId;
+}
+let saveTimer=null;
+function save(sync=true){
+  try{ localStorage.setItem(LS, JSON.stringify(store)); }catch(e){}
+  if(C) C.updatedAt = Date.now();
+  if(sync && drive.connected){ clearTimeout(saveTimer); saveTimer=setTimeout(drivePush, 1200); }
+}
+
+/* ---------- Helpers DOM ---------- */
+const $ = s => document.querySelector(s);
+const el = (t,c,h)=>{const n=document.createElement(t);if(c)n.className=c;if(h!=null)n.innerHTML=h;return n;};
+function toast(msg){ const t=$("#toast"); t.textContent=msg; t.classList.add("on"); clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove("on"),2200); }
+
+/* ---------- Derived ---------- */
+const PB = ()=>pbFor(C.level);
+const saveBonus = a => mod(C.abilities[a]) + (C.saveProf[a]?PB():0);
+const skillBonus = k => { const sk=SKILLS.find(s=>s[0]===k); const p=C.skillProf[k]||0; return mod(C.abilities[sk[2]]) + p*PB(); };
+const spellDC = ()=> 8 + PB() + mod(C.abilities[C.castAbility]);
+const spellAtk = ()=> PB() + mod(C.abilities[C.castAbility]);
+const passivePerc = ()=> 10 + skillBonus("perception");
+
+/* ---------- Magias raciales ---------- */
+function racialGrants(){
+  const sp = SPECIES[C.species]; if(!sp) return {cantrips:[],leveled:[]};
+  const base = sp.grants || {cantrips:[],leveled:[]};
+  let lin = {cantrips:[],leveled:[]};
+  if(sp.lineages && sp.lineages[C.lineage]) lin = sp.lineages[C.lineage].grants || lin;
+  const cantrips = [...(base.cantrips||[]), ...(lin.cantrips||[])];
+  // req = nivel de PERSONAJE necesario para obtenerlo; lvl = nivel real del conjuro
+  const leveled = [...(base.leveled||[]), ...(lin.leveled||[])].filter(x=> (+C.level||1) >= x.req);
+  return {cantrips, leveled};
+}
+function applyRacialSpells(){
+  C.cantrips = C.cantrips.filter(x=>x.source!=="racial");
+  C.spells   = C.spells.filter(x=>x.source!=="racial");
+  const g = racialGrants();
+  g.cantrips.forEach(n=>{ if(!C.cantrips.some(x=>x.name.toLowerCase()===n.toLowerCase())) C.cantrips.push({name:n,source:"racial"}); });
+  g.leveled.forEach(s=>{ if(!C.spells.some(x=>x.name.toLowerCase()===s.name.toLowerCase())) C.spells.push({name:s.name,level:s.lvl,note:"",source:"racial"}); });
+}
+
+/* ---------- Acceso a conjuros por clase y nivel de personaje ---------- */
+function spellAccess(){
+  const cls=C.cls, sub=C.subclass, lv=+C.level||1;
+  const full=["Bardo","Clérigo","Druida","Hechicero","Mago"];
+  const half=["Paladín","Explorador"];
+  if(full.includes(cls)) return {list:cls, max:Math.min(9,Math.ceil(lv/2))};
+  if(cls==="Brujo") return {list:cls, max:Math.min(5,Math.ceil(lv/2))};
+  if(half.includes(cls)){ const m = lv<2?0:lv<5?1:lv<9?2:lv<13?3:lv<17?4:5; return {list:cls, max:m}; }
+  if(sub==="Caballero Arcano"||sub==="Embaucador Arcano"){ const m = lv<3?0:lv<7?1:lv<13?2:lv<19?3:4; return {list:"Mago", max:m, third:1}; }
+  return {list:null, max:0};
+}
+
+/* ---------- Buscador de conjuros ---------- */
+let pickerLevel="all", pickerSearch="";
+function openPicker(){ pickerLevel="all"; pickerSearch=""; $("#pickerSearch").value=""; renderPicker(); openSheet("#pickerSheet"); }
+function renderPicker(){
+  const acc=spellAccess();
+  $("#pickerHead").textContent="Añadir conjuro — "+(C.cls||"—");
+  const body=$("#pickerBody"), chips=$("#pickerChips");
+  if(!acc.list || !SPELL_LISTS[acc.list]){
+    $("#pickerSearchWrap").style.display="none"; chips.innerHTML="";
+    body.innerHTML='<p class="muted-note">Esta clase no lanza conjuros de una lista (o su subclase aún no está soportada). Puedes añadirlos a mano abajo.</p>';
+    return;
+  }
+  $("#pickerSearchWrap").style.display="";
+  const list=SPELL_LISTS[acc.list];
+  chips.innerHTML="";
+  const levels=["all"]; for(let i=0;i<=acc.max;i++) levels.push(i);
+  levels.forEach(l=>{
+    const b=el("button","tab"+(String(pickerLevel)===String(l)?" active":""), l==="all"?"Todos":(l===0?"Trucos":"Nv "+l));
+    b.onclick=()=>{ pickerLevel=l; renderPicker(); };
+    chips.appendChild(b);
+  });
+  const owned=new Set([...C.cantrips.map(x=>x.name.toLowerCase()), ...C.spells.map(x=>x.name.toLowerCase())]);
+  const q=pickerSearch.trim().toLowerCase();
+  body.innerHTML=""; let count=0;
+  for(let l=0;l<=acc.max;l++){
+    if(pickerLevel!=="all" && String(pickerLevel)!==String(l)) continue;
+    (list[l]||[]).forEach(name=>{
+      if(owned.has(name.toLowerCase())) return;
+      if(q && !name.toLowerCase().includes(q)) return;
+      count++;
+      const info=SPELL_INFO[name];
+      const flags=[]; if(info&&info.c)flags.push("Conc"); if(info&&info.ri)flags.push("Ritual");
+      const dmg = info&&info.dm ? `<b style="color:var(--crimson)">${esc(info.dm)}</b> · ` : "";
+      const it=el("div","item");
+      it.innerHTML=`<div class="ic"><div class="t">${esc(name)} <span class="tag">${l===0?"Truco":"Nv "+l}</span></div><div class="m">${dmg}${info?esc(info.e):"Resumen pendiente"}${flags.length?" · "+flags.join(" · "):""}</div></div>`;
+      const add=el("button","del","＋"); add.style.color="var(--sage)"; add.setAttribute("aria-label","Añadir "+name);
+      add.onclick=()=>{ if(l===0) C.cantrips.push({name}); else C.spells.push({name,level:l,note:""}); save(); toast(name+" añadido"); renderPicker(); renderHeader(); };
+      it.appendChild(add); body.appendChild(it);
+    });
+  }
+  if(!count) body.innerHTML='<p class="muted-note">Nada que coincida, o ya tienes todos los de este filtro.</p>';
+}
+
+/* ============================================================ TABS */
+const TABS = [["core","Aptitudes"],["combat","Combate"],["magic","Magia"],["gear","Equipo"],["notes","Notas"]];
+
+function renderHeader(){
+  $("#hName").textContent = C.name || "Sin nombre";
+  $("#hEmblem").innerHTML = classIcon(C.cls);
+  $("#hEmblem").style.display = CLASS_ICONS[C.cls] ? "block" : "none";
+  const bits = [C.species, C.cls + (C.subclass?" · "+C.subclass:""), "Nivel "+C.level].filter(Boolean);
+  $("#hSub").innerHTML = `<b>${C.cls||"—"}</b>${C.subclass? " · "+C.subclass:""} · Nivel ${C.level}`;
+  $("#hpMiniCur").textContent = C.hp.current;
+  $("#hpMiniMax").textContent = C.hp.max;
+}
+function renderTabs(){
+  const nav=$("#tabs"); nav.innerHTML="";
+  TABS.forEach(([id,label])=>{
+    const b=el("button","tab"+(currentTab===id?" active":""),label);
+    b.onclick=()=>{ currentTab=id; renderTabs(); renderMain(); };
+    nav.appendChild(b);
+  });
+}
+function renderMain(){
+  const m=$("#main"); m.innerHTML="";
+  const panel=el("div","tab-panel");
+  ({core:tabCore,combat:tabCombat,magic:tabMagic,gear:tabGear,notes:tabNotes})[currentTab](panel);
+  m.appendChild(panel);
+  renderHeader();
+}
+
+/* ---------- TAB: CORE ---------- */
+function tabCore(p){
+  // identity card
+  const id=el("div","card");
+  id.appendChild(el("div","card-h",'<span class="eyebrow">Identidad</span>'));
+  const g=el("div","grid2");
+  g.appendChild(fieldInput("Nombre","name","text"));
+  g.appendChild(fieldInput("Nivel","level","number"));
+  // Clase -> Subclase
+  g.appendChild(selectField("Clase","cls",Object.keys(CLASSES),()=>{
+    if(!(CLASSES[C.cls]||[]).includes(C.subclass)) C.subclass="";
+  }));
+  g.appendChild(selectField("Subclase","subclass",CLASSES[C.cls]||[]));
+  // Especie -> Linaje
+  g.appendChild(selectField("Especie","species",Object.keys(SPECIES),()=>{
+    C.lineage=""; applyRacialSpells();
+  }));
+  const spData=SPECIES[C.species];
+  if(spData && spData.lineages){
+    g.appendChild(selectField("Linaje","lineage",Object.keys(spData.lineages),()=>{ applyRacialSpells(); }));
+  }
+  g.appendChild(fieldInput("Trasfondo","background","text"));
+  id.appendChild(g);
+  if(spData && spData.lineages && !C.lineage)
+    id.appendChild(el("p","muted-note",'Elige un linaje para cargar sus magias raciales.'));
+  p.appendChild(id);
+
+  // ability scores
+  const ab=el("div","card");
+  ab.appendChild(el("div","card-h",'<span class="eyebrow">Características</span>'));
+  const grid=el("div","abilities");
+  ABILS.forEach(([a,nm])=>{
+    const box=el("div","abil");
+    box.innerHTML=`<div class="nm">${nm}</div><div class="mod">${fmt(mod(C.abilities[a]))}</div>`;
+    const inp=el("input"); inp.type="number"; inp.value=C.abilities[a]; inp.inputMode="numeric";
+    inp.onchange=()=>{ C.abilities[a]=clamp(+inp.value||10,1,30); save(); renderMain(); };
+    box.appendChild(inp);
+    grid.appendChild(box);
+  });
+  ab.appendChild(grid);
+  p.appendChild(ab);
+
+  // stat strip
+  const strip=el("div","stat-strip");
+  strip.innerHTML=`
+    <div class="stat-pill"><div class="v gold">${fmt(PB())}</div><div class="k">Comp.</div></div>
+    <div class="stat-pill"><div class="v">${passivePerc()}</div><div class="k">Perc. pasiva</div></div>
+    <div class="stat-pill"><div class="v violet">${spellDC()}</div><div class="k">CD conjuros</div></div>`;
+  p.appendChild(strip);
+
+  // Salvaciones con sus habilidades agrupadas
+  const sk=el("div","card");
+  sk.appendChild(el("div","card-h",'<span class="eyebrow">Salvaciones y habilidades</span><span class="muted-note">toca ⬚ comp/pericia</span>'));
+  ABILS.forEach(([a])=>{
+    const block=el("div"); block.style.marginBottom="10px";
+    const sv=el("div","lrow"); sv.style.borderBottom="2px solid var(--line2)";
+    const pf=el("button","prof"); pf.dataset.p=C.saveProf[a]?1:0;
+    pf.onclick=()=>{ C.saveProf[a]=C.saveProf[a]?0:1; save(); renderMain(); };
+    sv.appendChild(pf);
+    sv.appendChild(el("div","lbl",`<b style="font-family:'Fraunces';font-size:15px">${ABIL_NAME[a]}</b> <small>salvación</small>`));
+    sv.appendChild(el("div","bonus",fmt(saveBonus(a))));
+    block.appendChild(sv);
+    SKILLS.filter(s=>s[2]===a).forEach(([k,label])=>{
+      const r=el("div","lrow"); r.style.paddingLeft="16px";
+      const pk=el("button","prof"); pk.dataset.p=C.skillProf[k]||0;
+      pk.onclick=()=>{ const cur=C.skillProf[k]||0; C.skillProf[k]=(cur+1)%3; save(); renderMain(); };
+      r.appendChild(pk);
+      r.appendChild(el("div","lbl",label));
+      r.appendChild(el("div","bonus",fmt(skillBonus(k))));
+      block.appendChild(r);
+    });
+    sk.appendChild(block);
+  });
+  p.appendChild(sk);
+}
+
+/* ---------- TAB: COMBAT ---------- */
+function tabCombat(p){
+  // HP hero
+  const pct = C.hp.max>0 ? clamp(C.hp.current/C.hp.max*100,0,100) : 0;
+  const hero=el("div","hp-hero");
+  hero.innerHTML=`
+    <div class="top">
+      <span class="big">PUNTOS DE GOLPE</span>
+      <span class="hp-nums"><span class="cur">${C.hp.current}</span><span class="max"> / ${C.hp.max}</span>${C.hp.temp>0?` <span style="color:var(--violet);font-size:16px">+${C.hp.temp}</span>`:""}</span>
+    </div>
+    <div class="hp-bar"><i style="width:${pct}%"></i></div>`;
+  const ctrls=el("div","hp-ctrls");
+  ctrls.appendChild(hpStepper("dmg","Daño"));
+  ctrls.appendChild(hpStepper("heal","Curar"));
+  hero.appendChild(ctrls);
+  const sub=el("div","hp-sub");
+  sub.appendChild(fieldNumInline("PG máx",()=>C.hp.max,v=>{C.hp.max=Math.max(0,v);}));
+  sub.appendChild(fieldNumInline("PG temp",()=>C.hp.temp,v=>{C.hp.temp=Math.max(0,v);}));
+  hero.appendChild(sub);
+  p.appendChild(hero);
+
+  // defense strip
+  const strip=el("div","stat-strip");
+  strip.innerHTML=`
+    <div class="stat-pill"><div class="v gold">${C.ac}</div><div class="k">CA</div></div>
+    <div class="stat-pill"><div class="v">${fmt(mod(C.abilities.dex)+(+C.initMisc||0))}</div><div class="k">Iniciativa</div></div>
+    <div class="stat-pill"><div class="v" style="font-size:17px">${C.speed||"—"}</div><div class="k">Velocidad</div></div>`;
+  strip.children[0].onclick=()=>editPrompt("Clase de Armadura",C.ac,v=>{C.ac=+v||0;});
+  strip.children[2].onclick=()=>editPrompt("Velocidad",C.speed,v=>{C.speed=v;},true);
+  p.appendChild(strip);
+
+  // resources (Bardic Inspiration etc.)
+  const res=el("div","card");
+  res.appendChild(el("div","card-h",'<span class="eyebrow">Recursos</span>'));
+  if(!C.resources.length) res.appendChild(el("p","muted-note","Sin recursos. Añade Inspiración Bárdica, Furia, Ki, etc."));
+  C.resources.forEach((r,i)=>{
+    const box=el("div"); box.style.marginBottom="12px";
+    const head=el("div"); head.style.cssText="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px";
+    head.innerHTML=`<div><b>${r.name}</b>${r.die?` <span class="tag">${r.die}</span>`:""} <small style="color:var(--muted)">${r.max-r.used}/${r.max}</small></div>`;
+    const del=el("button","del","×"); del.style.cssText="width:26px;height:26px;border-radius:7px;background:var(--bg2);color:var(--crimson)";
+    del.onclick=()=>{ C.resources.splice(i,1); save(); renderMain(); };
+    head.appendChild(del); box.appendChild(head);
+    box.appendChild(pipRow(r.max, r.max-r.used, "gold", n=>{ r.used=r.max-n; save(); renderMain(); }));
+    res.appendChild(box);
+  });
+  const addR=el("div","add-row");
+  addR.innerHTML=`<input id="rName" placeholder="Nombre"><input id="rDie" placeholder="Dado (d6)" style="max-width:90px"><input id="rMax" type="number" placeholder="#" style="max-width:64px">`;
+  const addBtn=el("button","btn violet sm","＋"); addBtn.style.flex="none";
+  addBtn.onclick=()=>{ const n=$("#rName").value.trim(); if(!n)return; C.resources.push({name:n,die:$("#rDie").value.trim(),max:clamp(+$("#rMax").value||1,1,20),used:0}); save(); renderMain(); };
+  addR.appendChild(addBtn); res.appendChild(addR);
+  p.appendChild(res);
+
+  // death saves
+  const ds=el("div","card");
+  ds.appendChild(el("div","card-h",'<span class="eyebrow">Salvaciones de muerte</span>'));
+  const dsWrap=el("div"); dsWrap.style.cssText="display:flex;flex-direction:column;gap:12px";
+  const okRow=el("div"); okRow.style.cssText="display:flex;align-items:center;gap:12px";
+  okRow.appendChild(el("span","",'<span style="color:var(--sage);font-weight:600;width:70px;display:inline-block">Éxitos</span>'));
+  okRow.appendChild(deathPips("ok"));
+  const failRow=el("div"); failRow.style.cssText="display:flex;align-items:center;gap:12px";
+  failRow.appendChild(el("span","",'<span style="color:var(--crimson);font-weight:600;width:70px;display:inline-block">Fallos</span>'));
+  failRow.appendChild(deathPips("fail"));
+  dsWrap.appendChild(okRow); dsWrap.appendChild(failRow);
+  ds.appendChild(dsWrap);
+  p.appendChild(ds);
+
+  // hit dice
+  const hd=el("div","card");
+  hd.appendChild(el("div","card-h",'<span class="eyebrow">Dados de golpe</span>'));
+  const hdRow=el("div","grid3");
+  hdRow.appendChild(fieldNumInline("Disponibles",()=>C.hitDice.current,v=>{C.hitDice.current=clamp(v,0,C.hitDice.total);}));
+  hdRow.appendChild(fieldNumInline("Total",()=>C.hitDice.total,v=>{C.hitDice.total=Math.max(0,v);}));
+  hdRow.appendChild(fieldTextInline("Dado",()=>C.hitDice.die,v=>{C.hitDice.die=v;}));
+  hd.appendChild(hdRow);
+  p.appendChild(hd);
+}
+
+function hpStepper(kind,label){
+  const wrap=el("div");
+  wrap.innerHTML=`<div style="font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--faint);margin:0 0 5px 2px">${label}</div>`;
+  const box=el("div","hp-in");
+  const minus=el("button",kind==="heal"?"heal":"dmg","−");
+  const inp=el("input"); inp.type="number"; inp.value=1; inp.inputMode="numeric"; inp.min=0;
+  const plus=el("button",kind==="heal"?"heal":"dmg","＋");
+  const apply=sign=>{
+    let amt=Math.abs(+inp.value||0); if(!amt)return;
+    if(kind==="dmg"){
+      if(C.hp.temp>0){ const t=Math.min(C.hp.temp,amt); C.hp.temp-=t; amt-=t; }
+      C.hp.current=clamp(C.hp.current-amt,0,C.hp.max);
+    } else {
+      C.hp.current=clamp(C.hp.current+amt,0,C.hp.max);
+    }
+    save(); renderMain();
+  };
+  minus.onclick=()=>{ inp.value=Math.max(0,(+inp.value||0)-1); };
+  plus.onclick=()=>{ inp.value=(+inp.value||0)+1; };
+  inp.onkeydown=e=>{ if(e.key==="Enter"){ apply(); inp.blur(); } };
+  const go=el("button","btn "+(kind==="heal"?"":""),""); // apply on tap of big button
+  box.appendChild(minus); box.appendChild(inp); box.appendChild(plus);
+  wrap.appendChild(box);
+  const act=el("button","btn "+(kind==="heal"?"sm":"sm")); act.textContent=kind==="heal"?"Aplicar cura":"Aplicar daño";
+  act.style.cssText="width:100%;margin-top:6px;font-size:12.5px;"+(kind==="heal"?"color:var(--sage)":"color:var(--crimson)");
+  act.onclick=()=>apply();
+  wrap.appendChild(act);
+  return wrap;
+}
+function deathPips(kind){
+  const wrap=el("div","pips");
+  for(let i=1;i<=3;i++){
+    const pip=el("button","pip death"+(kind==="ok"?" ok":"")+(i<=C.death[kind]?" filled":""));
+    pip.onclick=()=>{ C.death[kind] = (C.death[kind]===i? i-1 : i); save(); renderMain(); };
+    wrap.appendChild(pip);
+  }
+  return wrap;
+}
+
+/* ---------- TAB: MAGIC ---------- */
+function tabMagic(p){
+  // caster strip
+  const strip=el("div","stat-strip");
+  strip.innerHTML=`
+    <div class="stat-pill"><div class="v violet">${spellDC()}</div><div class="k">CD salvación</div></div>
+    <div class="stat-pill"><div class="v gold">${fmt(spellAtk())}</div><div class="k">Ataque</div></div>
+    <div class="stat-pill" id="castPill"><div class="v" style="font-size:17px">${ABIL_NAME[C.castAbility].slice(0,3)}.</div><div class="k">Aptitud</div></div>`;
+  strip.children[2].onclick=()=>cycleCastAbility();
+  p.appendChild(strip);
+
+  // spell slots
+  const slotsCard=el("div","card");
+  slotsCard.appendChild(el("div","card-h",'<span class="eyebrow">Espacios de conjuro</span><span class="muted-note">toca para gastar</span>'));
+  let any=false;
+  for(let lv=1;lv<=9;lv++){
+    const s=C.slots[lv]; if(s.max<=0) continue; any=true;
+    const row=el("div","slot-row");
+    row.appendChild(el("div","lvl","Nivel "+lv));
+    row.appendChild(pipRow(s.max, s.max-s.used, "violet", n=>{ s.used=s.max-n; save(); renderMain(); }));
+    const edit=el("button","btn ghost sm","⚙"); edit.style.flex="none";
+    edit.onclick=()=>editPrompt("Espacios máx de nivel "+lv,s.max,v=>{s.max=clamp(+v||0,0,20);s.used=Math.min(s.used,s.max);});
+    row.appendChild(edit);
+    slotsCard.appendChild(row);
+  }
+  if(!any) slotsCard.appendChild(el("p","muted-note","Sin espacios configurados. Usa Editar espacios abajo."));
+  const cfg=el("button","btn wide sm","Editar espacios por nivel"); cfg.style.marginTop="10px";
+  cfg.onclick=()=>slotEditor();
+  slotsCard.appendChild(cfg);
+  p.appendChild(slotsCard);
+
+  // cantrips
+  const card1=el("div","card");
+  card1.appendChild(el("div","card-h",'<span class="eyebrow">Trucos</span>'));
+  C.cantrips.forEach((sp,i)=>cantripItem(cardMount(card1),sp,i));
+  const addC=el("div","add-row");
+  addC.innerHTML='<input id="cName" placeholder="Nombre del truco">';
+  const cb=el("button","btn violet sm","＋"); cb.style.flex="none";
+  cb.onclick=()=>{ const n=$("#cName").value.trim(); if(!n)return; C.cantrips.push({name:n}); save(); renderMain(); };
+  addC.appendChild(cb); cardMount(card1).appendChild(addC);
+  p.appendChild(card1);
+
+  // prepared spells grouped by level
+  const card2=el("div","card");
+  card2.appendChild(el("div","card-h",'<span class="eyebrow">Conjuros preparados</span><span class="muted-note">'+C.spells.length+'</span>'));
+  const mount=cardMount(card2);
+  const findBtn=el("button","btn violet wide","🔍  Buscar en la lista de "+(C.cls||"tu clase"));
+  findBtn.style.marginBottom="12px"; findBtn.onclick=openPicker;
+  mount.appendChild(findBtn);
+  const byLv={}; C.spells.forEach((sp,i)=>{ (byLv[sp.level]=byLv[sp.level]||[]).push({sp,i}); });
+  Object.keys(byLv).sort().forEach(lv=>{
+    mount.appendChild(el("div","",`<div style="font-family:'Fraunces';color:var(--violet);font-size:13px;margin:10px 0 6px">Nivel ${lv}</div>`));
+    byLv[lv].forEach(({sp,i})=>spellItem(mount,sp,i));
+  });
+  const addS=el("div","add-row");
+  addS.innerHTML=`<input id="sName" placeholder="Conjuro" style="flex:2"><select id="sLvl" style="flex:none;max-width:96px">${[1,2,3,4,5,6,7,8,9].map(l=>`<option value="${l}">Nv ${l}</option>`).join("")}</select>`;
+  const sb=el("button","btn violet sm","＋"); sb.style.flex="none";
+  sb.onclick=()=>{ const n=$("#sName").value.trim(); if(!n)return; C.spells.push({name:n,level:+$("#sLvl").value,note:""}); save(); renderMain(); };
+  addS.appendChild(sb); mount.appendChild(addS);
+  p.appendChild(card2);
+}
+function cardMount(card){ return card; }
+function racialTag(){ return ' <span class="tag" style="color:var(--gold);border-color:var(--gold-dim)">racial</span>'; }
+function infoBtn(name,level){ const b=el("button","info-btn","i"); b.setAttribute("aria-label","Info de "+name); b.onclick=e=>{ e.stopPropagation(); showSpellInfo(name,level); }; return b; }
+function cantripItem(mount,sp,i){
+  const it=el("div","item");
+  const racial = sp.source==="racial";
+  const inf=SPELL_INFO[sp.name];
+  const sub = inf ? (inf.dm ? `<b style="color:var(--crimson)">${esc(inf.dm)}</b> · ${esc(inf.t)}` : "Sin daño · "+esc(inf.a)) : "";
+  it.innerHTML=`<div class="ic"><div class="t">${esc(sp.name)}${racial?racialTag():""}</div>${sub?`<div class="m">${sub}</div>`:""}</div>`;
+  it.appendChild(infoBtn(sp.name,0));
+  if(!racial){ const del=el("button","del","×"); del.onclick=()=>{ C.cantrips.splice(i,1); save(); renderMain(); }; it.appendChild(del); }
+  mount.appendChild(it);
+}
+function spellItem(mount,sp,i){
+  const it=el("div","item");
+  const racial = sp.source==="racial";
+  const inf=SPELL_INFO[sp.name];
+  let sub="";
+  if(inf) sub = (inf.dm ? `<b style="color:var(--crimson)">${esc(inf.dm)}</b> · ${esc(inf.t)}` : `Sin daño · ${esc(inf.t&&inf.t!=="—"?inf.t:inf.a)}`) + (inf.c?" · Conc.":"");
+  if(racial) sub += ' <span style="color:var(--gold)">· gratis 1×/desc. largo</span>';
+  else if(sp.note) sub = esc(sp.note);
+  it.innerHTML=`<div class="ic"><div class="t">${esc(sp.name)}${racial?racialTag():""}</div>${sub?`<div class="m">${sub}</div>`:""}</div>`;
+  it.appendChild(infoBtn(sp.name,sp.level));
+  if(!racial){
+    it.querySelector(".ic").onclick=()=>editPrompt("Nota para "+sp.name,sp.note||"",v=>{sp.note=v;},true);
+    const del=el("button","del","×"); del.onclick=()=>{ C.spells.splice(i,1); save(); renderMain(); };
+    it.appendChild(del);
+  }
+  mount.appendChild(it);
+}
+function showSpellInfo(name,level){
+  const info=SPELL_INFO[name];
+  const flags=[]; if(info&&info.c)flags.push("Concentración"); if(info&&info.ri)flags.push("Ritual");
+  $("#infoTitle").textContent=name;
+  $("#infoMeta").textContent=(level>0?("Nivel "+level):"Truco")+(flags.length?" · "+flags.join(" · "):"");
+  const b=$("#infoBody");
+  if(!info){ b.textContent="Sin resumen para este conjuro todavía."; openSheet("#infoSheet"); return; }
+  const row=(k,v,cls)=>v?`<div class="sr"><div class="sk">${k}</div><div class="sv ${cls||""}">${esc(v)}</div></div>`:"";
+  b.innerHTML =
+    `<div class="sgrid">
+       ${row("Acción",info.a)}
+       ${row("Alcance",info.r)}
+       ${row("Duración",info.d)}
+       ${row("Tirada",info.t)}
+       ${row("Daño / efecto",info.dm,"dmg")}
+     </div>
+     <p class="seff">${esc(info.e)}</p>`;
+  openSheet("#infoSheet");
+}
+function cycleCastAbility(){
+  const order=["int","wis","cha"]; const idx=order.indexOf(C.castAbility);
+  C.castAbility=order[(idx+1)%order.length]; save(); renderMain();
+}
+function slotEditor(){
+  let msg="Escribe los espacios máximos por nivel, separados por coma (Nv1..Nv9).\nEj: 4,2 = 4 de nivel 1 y 2 de nivel 2.";
+  const cur=[]; for(let i=1;i<=9;i++) cur.push(C.slots[i].max);
+  const inp=prompt(msg, cur.filter((v,i)=>i<3||v>0).join(","));
+  if(inp==null) return;
+  const arr=inp.split(",").map(x=>clamp(parseInt(x)||0,0,20));
+  for(let i=1;i<=9;i++){ const v=arr[i-1]||0; C.slots[i].max=v; C.slots[i].used=Math.min(C.slots[i].used,v); }
+  save(); renderMain();
+}
+
+/* ---------- TAB: GEAR ---------- */
+function tabGear(p){
+  const cur=el("div","card");
+  cur.appendChild(el("div","card-h",'<span class="eyebrow">Monedas</span>'));
+  const cc=el("div","currency");
+  [["pp","PO"],["gp","OR"],["ep","EL"],["sp","PL"],["cp","CO"]].forEach(([k,lbl])=>{
+    const box=el("div","coin "+k);
+    box.innerHTML=`<div class="c">${lbl}</div>`;
+    const inp=el("input"); inp.type="number"; inp.value=C.currency[k]; inp.inputMode="numeric";
+    inp.onchange=()=>{ C.currency[k]=Math.max(0,+inp.value||0); save(); };
+    box.appendChild(inp); cc.appendChild(box);
+  });
+  cur.appendChild(cc); p.appendChild(cur);
+
+  // ---- Armas ----
+  if(!Array.isArray(C.weapons)) C.weapons=[];
+  const wc=el("div","card");
+  wc.appendChild(el("div","card-h",'<span class="eyebrow">Armas</span><span class="muted-note">'+C.weapons.length+'</span>'));
+  const wmount=cardMount(wc);
+
+  // selector + agregar
+  const addRow=el("div"); addRow.style.display="flex"; addRow.style.gap="8px"; addRow.style.marginBottom="12px";
+  const sel=el("select"); sel.style.flex="1";
+  const ph=el("option"); ph.value=""; ph.textContent="Elige un arma…"; sel.appendChild(ph);
+  WEAPON_CATS.forEach(cat=>{
+    const og=document.createElement("optgroup"); og.label=cat;
+    Object.keys(WEAPONS).filter(n=>WEAPONS[n].cat===cat).forEach(n=>{
+      const o=el("option"); o.value=n; o.textContent=n+" · "+WEAPONS[n].es; og.appendChild(o);
+    });
+    sel.appendChild(og);
+  });
+  const addBtn=el("button","btn gold","Agregar");
+  addBtn.onclick=()=>{ const n=sel.value; if(!n) return; C.weapons.push({name:n, prof:true, twoH:false}); save(); renderMain(); toast(n+" agregado al equipo"); };
+  addRow.appendChild(sel); addRow.appendChild(addBtn);
+  wmount.appendChild(addRow);
+
+  if(!C.weapons.length){
+    wmount.appendChild(el("p","muted-note","Aún no has agregado armas. Elige una arriba para ver su ficha con tu daño y ataque."));
+  }
+  C.weapons.forEach((wref,i)=>{
+    const w=WEAPONS[wref.name]; if(!w) return;
+    const calc=weaponCalc(wref.name, wref.prof);
+    const card=el("div","wcard");
+    // encabezado
+    const head=el("div","wcard-h");
+    head.innerHTML=`<div><b>${esc(wref.name)}</b> <small>${esc(w.es)}</small><div class="wcat">${esc(w.cat)}</div></div>`;
+    const del=el("button","del","🗑");
+    del.onclick=()=>{ C.weapons.splice(i,1); save(); renderMain(); };
+    head.appendChild(del);
+    card.appendChild(head);
+    // stats de ataque/daño
+    const abName={str:"FUE",dex:"DES",con:"CON",int:"INT",wis:"SAB",cha:"CAR"}[calc.ab];
+    const oneH = `${w.dmg} ${fmt(calc.abMod)} ${w.type.toLowerCase()}`;
+    const stats=el("div","wstats");
+    stats.innerHTML =
+      `<div class="wstat"><div class="wv gold">${fmt(calc.atk)}</div><div class="wk">Ataque (${abName})</div></div>`+
+      `<div class="wstat"><div class="wv">${esc(oneH)}</div><div class="wk">Daño ${calc.vers?"1 mano":""}</div></div>`+
+      (calc.vers?`<div class="wstat"><div class="wv">${calc.vers} ${fmt(calc.abMod)}</div><div class="wk">A 2 manos</div></div>`:"");
+    card.appendChild(stats);
+    // propiedades
+    if(w.props.length){
+      const pr=el("div","wprops");
+      w.props.forEach(pp=>{ const key=pp.split(" (")[0]; const t=PROP_INFO[key]?" — "+PROP_INFO[key]:""; const tag=el("span","wtag"); tag.textContent=pp; tag.title=(PROP_INFO[key]||pp); pr.appendChild(tag); });
+      card.appendChild(pr);
+    }
+    // maestría
+    const mst=el("div","wmastery");
+    mst.innerHTML=`<span class="wtag violet">Maestría: ${esc(w.mastery)}</span> <span class="wmtext">${esc(MASTERY_INFO[w.mastery]||"")}</span>`;
+    card.appendChild(mst);
+    // toggle competencia + peso/costo
+    const foot=el("div","wfoot");
+    const profBtn=el("button","chip"+(wref.prof?" on":""), (wref.prof?"✓ ":"")+"Competente");
+    profBtn.onclick=()=>{ wref.prof=!wref.prof; save(); renderMain(); };
+    foot.appendChild(profBtn);
+    foot.appendChild(el("span","wmeta",`${w.wt} · ${w.cost}`));
+    card.appendChild(foot);
+    wmount.appendChild(card);
+  });
+  // nota de maestría
+  wmount.appendChild(el("p","muted-note","Nota: en 2024 solo aprovechas la Maestría si tienes el rasgo Weapon Mastery (Bárbaro, Guerrero, Monje, Paladín, Explorador, Pícaro) o una dote que la otorgue. El Bardo no lo tiene de base."));
+  p.appendChild(wc);
+
+  const inv=el("div","card");
+  inv.appendChild(el("div","card-h",'<span class="eyebrow">Inventario</span>'));
+  inv.appendChild(bigText(()=>C.inventory,v=>{C.inventory=v;},"Otros objetos: armadura, pociones, herramientas…"));
+  p.appendChild(inv);
+}
+
+/* ---------- TAB: NOTES ---------- */
+function tabNotes(p){
+  const feat=el("div","card");
+  feat.appendChild(el("div","card-h",'<span class="eyebrow">Rasgos y aptitudes</span>'));
+  feat.appendChild(bigText(()=>C.features,v=>{C.features=v;},"Rasgos de clase, especie, dotes…"));
+  p.appendChild(feat);
+
+  const nt=el("div","card");
+  nt.appendChild(el("div","card-h",'<span class="eyebrow">Notas y trasfondo</span>'));
+  nt.appendChild(bigText(()=>C.notes,v=>{C.notes=v;},"Historia, aliados, misiones, lo que quieras recordar…"));
+  p.appendChild(nt);
+
+  const meta=el("div","card");
+  meta.appendChild(el("div","card-h",'<span class="eyebrow">Detalles</span>'));
+  const g=el("div","grid2");
+  g.appendChild(fieldInput("Alineamiento","alignment","text"));
+  g.appendChild(fieldInput("Jugador","player","text"));
+  meta.appendChild(g); p.appendChild(meta);
+}
+
+/* ---------- Reusable field builders ---------- */
+function fieldInput(label,key,type){
+  const l=el("label","fld"); l.appendChild(el("span",null,label));
+  const inp=el("input"); inp.type=type; inp.value=C[key]; if(type==="number")inp.inputMode="numeric";
+  inp.onchange=()=>{
+    C[key] = type==="number" ? (key==="level"?clamp(+inp.value||1,1,20):+inp.value||0) : inp.value;
+    save();
+    if(key==="level"){ applyRacialSpells(); }
+    if(["name","cls","subclass","species","level"].includes(key)) renderHeader();
+    if(key==="level") renderMain();
+  };
+  l.appendChild(inp); return l;
+}
+function selectField(label,key,options,onChange){
+  const l=el("label","fld"); l.appendChild(el("span",null,label));
+  const sel=el("select");
+  const opts = ['<option value="">— elegir —</option>']
+    .concat(options.map(o=>`<option value="${esc(o)}"${C[key]===o?" selected":""}>${esc(o)}</option>`));
+  // conservar valor previo aunque no esté en la lista (ej. subclase de otra clase)
+  if(C[key] && !options.includes(C[key])) opts.push(`<option value="${esc(C[key])}" selected>${esc(C[key])}</option>`);
+  sel.innerHTML = opts.join("");
+  sel.value = C[key]||"";
+  sel.onchange=()=>{
+    C[key]=sel.value;
+    if(onChange) onChange();
+    save();
+    if(["cls","subclass","species","level"].includes(key)) renderHeader();
+    renderMain();
+  };
+  l.appendChild(sel); return l;
+}
+function fieldNumInline(label,get,set){
+  const l=el("label","fld"); l.appendChild(el("span",null,label));
+  const inp=el("input"); inp.type="number"; inp.value=get(); inp.inputMode="numeric";
+  inp.onchange=()=>{ set(+inp.value||0); save(); renderMain(); };
+  l.appendChild(inp); return l;
+}
+function fieldTextInline(label,get,set){
+  const l=el("label","fld"); l.appendChild(el("span",null,label));
+  const inp=el("input"); inp.type="text"; inp.value=get();
+  inp.onchange=()=>{ set(inp.value); save(); };
+  l.appendChild(inp); return l;
+}
+function bigText(get,set,ph){
+  const ta=el("textarea"); ta.value=get(); ta.placeholder=ph;
+  ta.onchange=()=>{ set(ta.value); save(); };
+  return ta;
+}
+function pipRow(max,filled,color,onChange){
+  const wrap=el("div","pips");
+  for(let i=1;i<=max;i++){
+    const pip=el("button","pip "+color+(i<=filled?" filled":""));
+    pip.onclick=()=>{ onChange(i<=filled ? i-1 : i); };
+    wrap.appendChild(pip);
+  }
+  if(max===0) wrap.appendChild(el("span","muted-note","—"));
+  return wrap;
+}
+function editPrompt(label,val,set,isText){
+  const r=prompt(label+":", val);
+  if(r==null) return;
+  set(isText? r : r);
+  save(); renderMain();
+}
+const esc = s => (s||"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+/* ============================================================ CHARACTER MANAGER */
+function openSheet(id){ $("#scrim").classList.add("on"); $(id).classList.add("on"); }
+function closeSheets(){ $("#scrim").classList.remove("on"); $("#charSheet").classList.remove("on"); $("#menuSheet").classList.remove("on"); $("#infoSheet").classList.remove("on"); $("#pickerSheet").classList.remove("on"); }
+$("#scrim").onclick=closeSheets;
+$("#infoClose").onclick=closeSheets;
+$("#pickerClose").onclick=closeSheets;
+$("#pickerSearch").oninput=(e)=>{ pickerSearch=e.target.value; renderPicker(); };
+
+function renderCharList(){
+  const list=$("#charList"); list.innerHTML="";
+  store.characters.forEach(ch=>{
+    const it=el("div","char-item"+(ch.id===store.activeId?" active":""));
+    it.innerHTML=`<div class="ci-emblem">${classIcon(ch.cls)}</div><div class="ci-main"><div class="nm">${esc(ch.name||"Sin nombre")}</div><div class="mt">${esc(ch.cls||"—")} · Nivel ${ch.level}</div></div>`;
+    it.querySelector(".ci-main").onclick=()=>{ switchChar(ch.id); };
+    if(store.characters.length>1){
+      const del=el("button","mini","×");
+      del.onclick=e=>{ e.stopPropagation(); if(confirm("¿Borrar a "+ (ch.name||"este personaje") +"?")){ store.characters=store.characters.filter(x=>x.id!==ch.id); if(store.activeId===ch.id){ store.activeId=store.characters[0].id; C=store.characters[0]; } save(); renderCharList(); renderAll(); } };
+      it.appendChild(del);
+    }
+    list.appendChild(it);
+  });
+}
+function switchChar(id){ store.activeId=id; C=store.characters.find(c=>c.id===id); if(C.lineage===undefined)C.lineage=""; applyRacialSpells(); currentTab="core"; save(); closeSheets(); renderAll(); }
+function renderAll(){ renderTabs(); renderMain(); renderHeader(); }
+
+$("#btnChars").onclick=()=>{ renderCharList(); openSheet("#charSheet"); };
+$("#btnNewChar").onclick=()=>{ const c=newCharacter(); store.characters.push(c); switchChar(c.id); };
+$("#btnMenu").onclick=()=>{ updateSyncUI(); openSheet("#menuSheet"); };
+
+/* ============================================================ BACKUP: export / import */
+$("#btnExport").onclick=()=>{
+  const blob=new Blob([JSON.stringify(store.characters,null,2)],{type:"application/json"});
+  const a=el("a"); a.href=URL.createObjectURL(blob); a.download="personajes_dnd.json"; a.click();
+  URL.revokeObjectURL(a.href); toast("Respaldo descargado");
+};
+$("#btnImport").onclick=()=>$("#fileImport").click();
+$("#fileImport").onchange=e=>{
+  const f=e.target.files[0]; if(!f) return;
+  const rd=new FileReader();
+  rd.onload=()=>{
+    try{
+      const data=JSON.parse(rd.result);
+      const arr=Array.isArray(data)?data:(data.characters||[]);
+      if(!arr.length){ toast("Archivo sin personajes"); return; }
+      arr.forEach(ch=>{ if(!ch.id)ch.id=uid(); const ex=store.characters.findIndex(c=>c.id===ch.id); if(ex>=0)store.characters[ex]=ch; else store.characters.push(ch); });
+      save(); toast("Personajes importados"); renderCharList(); renderAll();
+    }catch(err){ toast("No se pudo leer el archivo"); }
+  };
+  rd.readAsText(f); e.target.value="";
+};
+
+/* ============================================================ GOOGLE DRIVE SYNC
+   Client-side (Google Identity Services + Drive REST). Sin backend.
+   Requiere: app publicada en HTTPS + tu OAuth Client ID con ese origen autorizado.
+   Guarda un archivo "personajes_dnd.json" con scope drive.file. */
+const drive = { token:null, expiry:0, connected:false, tokenClient:null };
+const DRIVE_FILE_NAME = "personajes_dnd.json";
+
+function updateSyncUI(){
+  const dot=$("#syncDot"), txt=$("#syncTxt");
+  dot.className="sync-dot"+(drive.connected?" on":"");
+  txt.textContent = drive.connected ? "Conectado · guarda solo" : "Sin conectar";
+}
+function setSync(state,label){ const d=$("#syncDot"),t=$("#syncTxt"); d.className="sync-dot "+state; if(label)t.textContent=label; }
+
+$("#clientId").onchange=()=>{ store.driveClientId=$("#clientId").value.trim(); save(false); };
+
+$("#btnDriveConnect").onclick=()=>{
+  const cid=$("#clientId").value.trim();
+  if(!cid){ toast("Pega primero tu ID de cliente"); return; }
+  store.driveClientId=cid; save(false);
+  if(typeof google==="undefined" || !google.accounts){ toast("Cargando Google… reintenta en 2s"); return; }
+  try{
+    drive.tokenClient = google.accounts.oauth2.initTokenClient({
+      client_id: cid,
+      scope: "https://www.googleapis.com/auth/drive.file",
+      callback: (resp)=>{
+        if(resp.error){ setSync("err","Error de permiso"); toast("Permiso denegado"); return; }
+        drive.token=resp.access_token; drive.expiry=Date.now()+3300*1000; drive.connected=true;
+        updateSyncUI(); toast("Drive conectado");
+        drivePullThenPush();
+      }
+    });
+    setSync("sync","Conectando…");
+    drive.tokenClient.requestAccessToken({prompt:"consent"});
+  }catch(e){ setSync("err","Error"); toast("Revisa el ID de cliente"); }
+};
+$("#btnDriveOff").onclick=()=>{ drive.connected=false; drive.token=null; updateSyncUI(); toast("Drive desconectado"); };
+
+async function ensureToken(){
+  if(drive.token && Date.now()<drive.expiry) return true;
+  return new Promise(res=>{
+    if(!drive.tokenClient){ res(false); return; }
+    drive.tokenClient.callback=(resp)=>{ if(resp.error){res(false);return;} drive.token=resp.access_token; drive.expiry=Date.now()+3300*1000; res(true); };
+    drive.tokenClient.requestAccessToken({prompt:""});
+  });
+}
+async function driveFindFile(){
+  const q=encodeURIComponent(`name='${DRIVE_FILE_NAME}' and trashed=false`);
+  const r=await fetch(`https://www.googleapis.com/drive/v3/files?q=${q}&spaces=drive&fields=files(id,name)`,{headers:{Authorization:"Bearer "+drive.token}});
+  const j=await r.json(); return (j.files&&j.files[0])?j.files[0].id:null;
+}
+async function drivePullThenPush(){
+  try{
+    setSync("sync","Sincronizando…");
+    let fid=store.driveFileId || await driveFindFile();
+    if(fid){
+      store.driveFileId=fid;
+      const r=await fetch(`https://www.googleapis.com/drive/v3/files/${fid}?alt=media`,{headers:{Authorization:"Bearer "+drive.token}});
+      if(r.ok){
+        const remote=await r.json();
+        if(Array.isArray(remote)&&remote.length){
+          if(confirm("Se encontró un respaldo en tu Drive. ¿Cargar esos personajes? (Cancelar = subir los de este teléfono)")){
+            store.characters=remote; store.activeId=remote[0].id; C=remote[0];
+            save(false); renderCharList(); renderAll(); toast("Cargado desde Drive");
+          }
+        }
+      }
+    }
+    await drivePush();
+  }catch(e){ setSync("err","Error de sync"); }
+}
+async function drivePush(){
+  if(!drive.connected) return;
+  if(!(await ensureToken())){ setSync("err","Sesión expirada"); return; }
+  try{
+    setSync("sync","Guardando…");
+    const body=JSON.stringify(store.characters,null,2);
+    if(!store.driveFileId) store.driveFileId=await driveFindFile();
+    if(store.driveFileId){
+      await fetch(`https://www.googleapis.com/upload/drive/v3/files/${store.driveFileId}?uploadType=media`,{
+        method:"PATCH", headers:{Authorization:"Bearer "+drive.token,"Content-Type":"application/json"}, body
+      });
+    }else{
+      const meta={name:DRIVE_FILE_NAME,mimeType:"application/json"};
+      const boundary="grim"+Date.now();
+      const multipart=`--${boundary}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${JSON.stringify(meta)}\r\n--${boundary}\r\nContent-Type: application/json\r\n\r\n${body}\r\n--${boundary}--`;
+      const r=await fetch("https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart",{
+        method:"POST", headers:{Authorization:"Bearer "+drive.token,"Content-Type":`multipart/related; boundary=${boundary}`}, body:multipart
+      });
+      const j=await r.json(); if(j.id) store.driveFileId=j.id;
+    }
+    localStorage.setItem(LS,JSON.stringify(store));
+    setSync("on","Guardado ✓"); setTimeout(()=>{ if(drive.connected) updateSyncUI(); },1500);
+  }catch(e){ setSync("err","Error al guardar"); }
+}
+
+/* ============================================================ BOOT */
+load();
+renderAll();
+</script>
+</body>
+</html>
