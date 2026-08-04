@@ -230,11 +230,19 @@ main{padding:16px 14px 44px;max-width:640px;margin:0 auto}
 .sk{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--gold);width:110px;flex:none;padding-top:2px}
 .sv{font-size:14px;font-weight:600;flex:1}
 .sv.dmg{color:var(--crimson)}
+.sv.scale{color:var(--azure);font-size:13px}
 .seff{font-size:14.5px;line-height:1.6;color:var(--text)}
 .info-spell-ic{display:inline-grid;place-items:center;vertical-align:middle;margin-right:8px;filter:drop-shadow(0 2px 4px rgba(0,0,0,.4))}
 #infoTitle{display:flex;align-items:center;justify-content:center;gap:2px}
 .item .ic .m{font-size:12px;color:var(--muted);line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 
+.feat-row{display:flex;gap:12px;padding:11px 0;border-bottom:1px solid var(--line)}
+.feat-row:last-child{border-bottom:none}
+.feat-lv{width:30px;height:30px;flex:none;border-radius:8px;background:linear-gradient(180deg,rgba(200,155,60,.2),rgba(200,155,60,.06));border:1px solid var(--gold-dim);color:var(--gold);font-family:'Cinzel',serif;font-weight:700;font-size:14px;display:grid;place-items:center;box-shadow:inset 0 1px 0 rgba(255,245,220,.1)}
+.feat-body{flex:1;min-width:0}
+.feat-name{font-weight:600;font-size:14.5px;margin-bottom:3px}
+.feat-desc{font-size:13px;color:var(--muted);line-height:1.5}
+.feat-sep{font-family:'Cinzel',serif;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--violet);margin:14px 0 6px;padding-top:12px;border-top:1px solid var(--violet-dim);text-align:center}
 .slotwarn{background:rgba(224,190,90,.08);border:1px solid var(--gold-dim);border-radius:10px;padding:10px 12px;margin-bottom:12px}
 .slotwarn .sw-t{font-size:13px;font-weight:700;color:var(--gold);margin-bottom:3px}
 .slotwarn .sw-m{font-size:12px;color:var(--muted);margin-bottom:8px}
@@ -503,8 +511,8 @@ function spr(r,c,size){
   return `<i class="spr" style="width:${size}px;height:${size}px;background-image:var(--sprite);background-size:${bg}px ${bgv}px;background-position:-${c*size}px -${r*size}px"></i>`;
 }
 const ICON = {
-  search: spr(9,5,18), plus: spr(9,0,18), close: spr(9,4,16),
-  trash: spr(9,2,16), spark: spr(2,3,16), info: spr(10,1,17)
+  search: spr(9,5,18), plus: spr(9,0,18), close: spr(9,4,17),
+  trash: spr(9,2,17), spark: spr(2,3,17), info: spr(10,1,18)
 };
 
 /* ============================================================
@@ -582,14 +590,14 @@ const SPELL_INFO = {
 "Message":{a:"Acción",r:"36 m (120 pies)",d:"1 asalto",c:0,t:"—",dm:"",e:"Susurras un mensaje a una criatura; solo ella lo oye y puede responderte en susurro. Sin daño."},
 "Minor Illusion":{a:"Acción",r:"9 m (30 pies)",d:"1 min",c:0,t:"—",dm:"",e:"Creas un sonido o la imagen de un objeto. Quien lo Estudie e investigue puede detectar la ilusión. Sin daño."},
 "Prestidigitation":{a:"Acción",r:"3 m (10 pies)",d:"Hasta 1 hora",c:0,t:"—",dm:"",e:"Efectos menores: chispas, encender/apagar una vela, ensuciar o limpiar, sabor, marca. Sin daño."},
-"Poison Spray":{a:"Acción",r:"9 m (30 pies)",d:"Instantáneo",c:0,t:"Ataque a distancia",dm:"1d12 veneno",e:"SÍ HACE DAÑO. Tiras ataque mágico; si impactas, 1d12 de veneno. Sube a 2d12 (nv 5), 3d12 (11), 4d12 (17)."},
-"Starry Wisp":{a:"Acción",r:"18 m (60 pies)",d:"Instantáneo",c:0,t:"Ataque a distancia",dm:"1d8 radiante",e:"SÍ HACE DAÑO. Si impactas: 1d8 radiante y el objetivo brilla (luz tenue 3 m) hasta tu próximo turno, así no puede esconderse. Sube a 2d8 (nv 5), 3d8 (11), 4d8 (17)."},
+"Poison Spray":{a:"Acción",r:"9 m (30 pies)",d:"Instantáneo",c:0,t:"Ataque a distancia",dm:"1d12 veneno",e:"SÍ HACE DAÑO. Tiras ataque mágico; si impactas, 1d12 de veneno. Sube a 2d12 (nv 5), 3d12 (11), 4d12 (17).",sc:"Truco: 1d12 → 2d12 (nv5) → 3d12 (nv11) → 4d12 (nv17)"},
+"Starry Wisp":{a:"Acción",r:"18 m (60 pies)",d:"Instantáneo",c:0,t:"Ataque a distancia",dm:"1d8 radiante",e:"SÍ HACE DAÑO. Si impactas: 1d8 radiante y el objetivo brilla (luz tenue 3 m) hasta tu próximo turno, así no puede esconderse. Sube a 2d8 (nv 5), 3d8 (11), 4d8 (17).",sc:"Truco: 1d8 → 2d8 (nv5) → 3d8 (nv11) → 4d8 (nv17)"},
 "Thunderclap":{a:"Acción",r:"Personal (1,5 m)",d:"Instantáneo",c:0,t:"Salv. CON",dm:"1d6 trueno",e:"SÍ HACE DAÑO. Estallido a tu alrededor: cada criatura a 1,5 m que falle la salvación recibe 1d6 de trueno. Sube a 2d6 (nv 5), 3d6 (11), 4d6 (17). Se oye a 30 m: no sirve para sigilo."},
 "Thaumaturgy":{a:"Acción",r:"9 m (30 pies)",d:"Hasta 1 min",c:0,t:"—",dm:"",e:"Prodigio menor: voz atronadora, ojos alterados, temblor, llamas que cambian de color. Puro teatro, sin daño."},
 "True Strike":{a:"Acción",r:"Personal",d:"Instantáneo",c:0,t:"Ataque con arma",dm:"Daño del arma",e:"SÍ HACE DAÑO. Atacas con tu arma pero usando CARISMA en lugar de FUE/DES, y puedes elegir que el daño sea radiante. A nivel 5 suma +1d6 (2d6 a nv 11, 3d6 a nv 17)."},
-"Vicious Mockery":{a:"Acción",r:"18 m (60 pies)",d:"Instantáneo",c:0,t:"Salv. SAB",dm:"1d6 psíquico",e:"SÍ HACE DAÑO. Insulto mágico: si falla la salvación, 1d6 psíquico y Desventaja en su siguiente ataque. Sube a 2d6 (nv 5), 3d6 (11), 4d6 (17)."},
-"Chill Touch":{a:"Acción",r:"Toque",d:"Instantáneo",c:0,t:"Ataque cuerpo a cuerpo",dm:"1d10 necrótico",e:"SÍ HACE DAÑO. Ataque mágico al contacto: 1d10 necrótico y no puede recuperar PV hasta tu próximo turno. Sube a 2d10 (nv 5), 3d10 (11), 4d10 (17)."},
-"Fire Bolt":{a:"Acción",r:"36 m (120 pies)",d:"Instantáneo",c:0,t:"Ataque a distancia",dm:"1d10 fuego",e:"SÍ HACE DAÑO. Ataque mágico a distancia: 1d10 de fuego. Sube a 2d10 (nv 5), 3d10 (11), 4d10 (17)."},
+"Vicious Mockery":{a:"Acción",r:"18 m (60 pies)",d:"Instantáneo",c:0,t:"Salv. SAB",dm:"1d6 psíquico",e:"SÍ HACE DAÑO. Insulto mágico: si falla la salvación, 1d6 psíquico y Desventaja en su siguiente ataque. Sube a 2d6 (nv 5), 3d6 (11), 4d6 (17).",sc:"Truco: 1d6 (nv1-4) → 2d6 (nv5) → 3d6 (nv11) → 4d6 (nv17)"},
+"Chill Touch":{a:"Acción",r:"Toque",d:"Instantáneo",c:0,t:"Ataque cuerpo a cuerpo",dm:"1d10 necrótico",e:"SÍ HACE DAÑO. Ataque mágico al contacto: 1d10 necrótico y no puede recuperar PV hasta tu próximo turno. Sube a 2d10 (nv 5), 3d10 (11), 4d10 (17).",sc:"Truco: 1d10 → 2d10 (nv5) → 3d10 (nv11) → 4d10 (nv17)"},
+"Fire Bolt":{a:"Acción",r:"36 m (120 pies)",d:"Instantáneo",c:0,t:"Ataque a distancia",dm:"1d10 fuego",e:"SÍ HACE DAÑO. Ataque mágico a distancia: 1d10 de fuego. Sube a 2d10 (nv 5), 3d10 (11), 4d10 (17).",sc:"Truco: 1d10 (nv1-4) → 2d10 (nv5) → 3d10 (nv11) → 4d10 (nv17)"},
 "Druidcraft":{a:"Acción",r:"9 m (30 pies)",d:"Instantáneo",c:0,t:"—",dm:"",e:"Efectos naturales menores: predecir el clima 24 h, hacer florecer una planta, apagar/encender una llamita. Sin daño."},
 
 /* ===== NIVEL 1 ===== */
@@ -599,14 +607,14 @@ const SPELL_INFO = {
 "Color Spray":{a:"Acción",r:"Personal (cono 4,5 m)",d:"Instantáneo",c:0,t:"Salv. CON",dm:"",e:"Cono de luz: quien falle queda CIEGO hasta el final de tu próximo turno. Estar Cegado = Desventaja en sus ataques y Ventaja para atacarlo. No hace daño."},
 "Command":{a:"Acción",r:"18 m (60 pies)",d:"Instantáneo",c:0,t:"Salv. SAB",dm:"",e:"Orden de una palabra: si falla, la obedece en su próximo turno (Acércate, Suelta, Huye, Túmbate, Detente). Sin daño."},
 "Comprehend Languages":{a:"Acción / Ritual",r:"Personal",d:"1 hora",c:0,ri:1,t:"—",dm:"",e:"Entiendes cualquier idioma que oigas y cualquier texto que toques. Utilidad. Ritual: gratis si tienes 10 min."},
-"Cure Wounds":{a:"Acción",r:"Toque",d:"Instantáneo",c:0,t:"—",dm:"Cura 2d8 + CAR",e:"CURA. Tocas a alguien y recupera 2d8 + tu modificador de Carisma. +2d8 por cada nivel de espacio extra."},
+"Cure Wounds":{a:"Acción",r:"Toque",d:"Instantáneo",c:0,t:"—",dm:"Cura 2d8 + CAR",e:"CURA. Tocas a alguien y recupera 2d8 + tu modificador de Carisma. +2d8 por cada nivel de espacio extra.",up:"+2d8 de curación por nivel adicional"},
 "Detect Magic":{a:"Acción / Ritual",r:"Personal (9 m)",d:"Conc. 10 min",c:1,ri:1,t:"—",dm:"",e:"Percibes magia a 9 m y puedes ver el aura y su escuela. Utilidad. Ritual: gratis si tienes 10 min."},
 "Disguise Self":{a:"Acción",r:"Personal",d:"1 hora",c:0,t:"—",dm:"",e:"Cambias tu apariencia (ropa, armadura, altura ±30 cm). Es ilusión: al tocarte se nota. Sin daño."},
-"Dissonant Whispers":{a:"Acción",r:"18 m (60 pies)",d:"Instantáneo",c:0,t:"Salv. SAB",dm:"3d6 psíquico",e:"SÍ HACE DAÑO, y fuerte. Si falla: 3d6 psíquico Y debe usar su Reacción para huir de ti lo más lejos posible. Si supera: mitad de daño y no huye. +1d6 por nivel extra. Tu mejor daño de nivel 1."},
+"Dissonant Whispers":{a:"Acción",r:"18 m (60 pies)",d:"Instantáneo",c:0,t:"Salv. SAB",dm:"3d6 psíquico",e:"SÍ HACE DAÑO, y fuerte. Si falla: 3d6 psíquico Y debe usar su Reacción para huir de ti lo más lejos posible. Si supera: mitad de daño y no huye. +1d6 por nivel extra. Tu mejor daño de nivel 1.",up:"+1d6 psíquico por nivel adicional"},
 "Faerie Fire":{a:"Acción",r:"18 m (60 pies)",d:"Conc. 1 min",c:1,t:"Salv. DES",dm:"",e:"Cubo de 6 m: quien falle queda delineado en luz. Todos los ataques contra él tienen VENTAJA y no puede estar Invisible. No daña, pero es brutal para el grupo."},
 "False Life":{a:"Acción",r:"Personal",d:"Instantáneo",c:0,t:"—",dm:"2d4+4 PV temporales",e:"Ganas 2d4 + 4 puntos de vida temporales (escudo extra). +5 por nivel de espacio extra."},
 "Feather Fall":{a:"Reacción (al caer)",r:"18 m (60 pies)",d:"1 min",c:0,t:"—",dm:"",e:"Reacción cuando alguien cae: hasta 5 criaturas descienden lento y NO reciben daño por la caída."},
-"Healing Word":{a:"Acción adicional",r:"18 m (60 pies)",d:"Instantáneo",c:0,t:"—",dm:"Cura 2d4 + CAR",e:"CURA A DISTANCIA con Acción adicional: 2d4 + tu Carisma. Sirve para levantar a un aliado caído sin gastar tu acción. +2d4 por nivel extra."},
+"Healing Word":{a:"Acción adicional",r:"18 m (60 pies)",d:"Instantáneo",c:0,t:"—",dm:"Cura 2d4 + CAR",e:"CURA A DISTANCIA con Acción adicional: 2d4 + tu Carisma. Sirve para levantar a un aliado caído sin gastar tu acción. +2d4 por nivel extra.",up:"+2d4 de curación por nivel adicional"},
 "Heroism":{a:"Acción",r:"Toque",d:"Conc. 1 min",c:1,t:"—",dm:"PV temp. = CAR/turno",e:"El aliado es inmune a Asustado y gana PV temporales iguales a tu Carisma AL INICIO DE CADA TURNO suyo. No daña."},
 "Identify":{a:"1 min / Ritual",r:"Toque",d:"Instantáneo",c:0,ri:1,t:"—",dm:"",e:"Aprendes qué hace un objeto mágico, si necesita Sintonización y cuántas cargas tiene. Ritual: gratis."},
 "Illusory Script":{a:"1 min / Ritual",r:"Toque",d:"10 días",c:0,ri:1,t:"—",dm:"",e:"Escribes un texto que solo leen quienes tú elijas; los demás ven otra cosa. Sin daño."},
@@ -621,11 +629,11 @@ const SPELL_INFO = {
 "Ray of Sickness":{a:"Acción",r:"18 m (60 pies)",d:"Instantáneo",c:0,t:"Ataque a distancia",dm:"2d8 veneno",e:"SÍ HACE DAÑO. Si impactas: 2d8 de veneno y queda ENVENENADO (Desventaja en ataques y pruebas) hasta el final de tu próximo turno."},
 
 /* ===== NIVEL 2 ===== */
-"Aid":{a:"Acción",r:"9 m (30 pies)",d:"8 horas",c:0,t:"—",dm:"+5 PV máx.",e:"Hasta 3 criaturas suben su máximo de PV y sus PV actuales en 5, por 8 horas. +5 más por cada nivel extra."},
+"Aid":{a:"Acción",r:"9 m (30 pies)",d:"8 horas",c:0,t:"—",dm:"+5 PV máx.",e:"Hasta 3 criaturas suben su máximo de PV y sus PV actuales en 5, por 8 horas. +5 más por cada nivel extra.",up:"+5 PV máximos por nivel adicional"},
 "Animal Messenger":{a:"Acción / Ritual",r:"9 m (30 pies)",d:"24 horas",c:0,ri:1,t:"Salv. CAR",dm:"",e:"Una Bestia diminuta lleva tu mensaje a un lugar que conozcas. Utilidad, sin daño."},
 "Blindness/Deafness":{a:"Acción",r:"36 m (120 pies)",d:"1 min",c:0,t:"Salv. CON",dm:"",e:"NO hace daño. Si falla: queda CIEGO o SORDO (tú eliges). Cegado = Desventaja en sus ataques y Ventaja para atacarlo. Repite la salvación al final de cada turno suyo. NO usa concentración (por eso combina bien con Bane)."},
 "Calm Emotions":{a:"Acción",r:"18 m (60 pies)",d:"Conc. 1 min",c:1,t:"Salv. CAR",dm:"",e:"Esfera de 6 m: los humanoides que fallen o se vuelven inmunes a Encantado/Asustado, o se calman y dejan de ser hostiles. Sin daño."},
-"Cloud of Daggers":{a:"Acción",r:"18 m (60 pies)",d:"Conc. 1 min",c:1,t:"— (sin salvación)",dm:"4d4 cortante",e:"SÍ HACE DAÑO, y AUTOMÁTICO: cubo de 1,5 m de dagas giratorias. Todo el que esté dentro, entre o termine su turno ahí recibe 4d4 sin tirada. +2d4 por nivel extra."},
+"Cloud of Daggers":{a:"Acción",r:"18 m (60 pies)",d:"Conc. 1 min",c:1,t:"— (sin salvación)",dm:"4d4 cortante",e:"SÍ HACE DAÑO, y AUTOMÁTICO: cubo de 1,5 m de dagas giratorias. Todo el que esté dentro, entre o termine su turno ahí recibe 4d4 sin tirada. +2d4 por nivel extra.",up:"+2d4 cortante por nivel adicional"},
 "Crown of Madness":{a:"Acción",r:"36 m (120 pies)",d:"Conc. 1 min",c:1,t:"Salv. SAB",dm:"",e:"Un humanoide que falle queda Encantado y debe atacar a una criatura que tú elijas en su turno. Sin daño directo."},
 "Darkness":{a:"Acción",r:"18 m (60 pies)",d:"Conc. 10 min",c:1,t:"—",dm:"",e:"Esfera de 4,5 m de oscuridad mágica: ni la Visión en la Oscuridad la atraviesa. Sin daño."},
 "Detect Thoughts":{a:"Acción",r:"Personal (9 m)",d:"Conc. 1 min",c:1,t:"—",dm:"",e:"Lees pensamientos superficiales a 9 m; puedes profundizar (la criatura puede resistirse). Sin daño."},
@@ -633,7 +641,7 @@ const SPELL_INFO = {
 "Enlarge/Reduce":{a:"Acción",r:"9 m (30 pies)",d:"Conc. 1 min",c:1,t:"Salv. CON",dm:"±1d4 daño",e:"Agrandar: +1d4 al daño de sus armas y Ventaja en pruebas de FUE. Reducir: −1d4 al daño y Desventaja. Un enemigo puede resistirse con salv. CON."},
 "Enthrall":{a:"Acción",r:"18 m (60 pies)",d:"Conc. 1 min",c:1,t:"Salv. SAB",dm:"",e:"Quien falle sufre −10 a Percepción (y a su Percepción pasiva): no te ve venir. Ideal para que el grupo se escabulla. Sin daño."},
 "Heat Metal":{a:"Acción",r:"18 m (60 pies)",d:"Conc. 1 min",c:1,t:"Salv. CON",dm:"2d8 fuego",e:"SÍ HACE DAÑO. Calientas un objeto metálico (arma o armadura): quien lo toque recibe 2d8 de fuego, y en tus turnos siguientes puedes repetirlo con una acción adicional. Si falla la salv. CON, suelta el objeto."},
-"Hold Person":{a:"Acción",r:"18 m (60 pies)",d:"Conc. 1 min",c:1,t:"Salv. SAB",dm:"",e:"Un humanoide que falle queda PARALIZADO: no actúa, falla salvaciones de FUE/DES, y los ataques a 1,5 m contra él son CRÍTICOS automáticos. Repite la salvación cada turno. No daña, pero es demoledor."},
+"Hold Person":{a:"Acción",r:"18 m (60 pies)",d:"Conc. 1 min",c:1,t:"Salv. SAB",dm:"",e:"Un humanoide que falle queda PARALIZADO: no actúa, falla salvaciones de FUE/DES, y los ataques a 1,5 m contra él son CRÍTICOS automáticos. Repite la salvación cada turno. No daña, pero es demoledor.",up:"+1 objetivo por nivel adicional"},
 "Invisibility":{a:"Acción",r:"Toque",d:"Conc. 1 hora",c:1,t:"—",dm:"",e:"El objetivo queda INVISIBLE. Se rompe en cuanto ataca, hace daño o lanza un conjuro. Sin daño."},
 "Knock":{a:"Acción",r:"18 m (60 pies)",d:"Instantáneo",c:0,t:"—",dm:"",e:"Abre una cerradura, puerta atrancada o grilletes. Hace un estruendo audible a 90 m. Sin daño."},
 "Lesser Restoration":{a:"Acción adicional",r:"Toque",d:"Instantáneo",c:0,t:"—",dm:"",e:"Quita UNA condición: Cegado, Ensordecido, Paralizado o Envenenado. Con Acción adicional. Sin daño."},
@@ -643,13 +651,109 @@ const SPELL_INFO = {
 "Mirror Image":{a:"Acción",r:"Personal",d:"1 min",c:0,t:"—",dm:"",e:"3 duplicados ilusorios tuyos. Cada ataque enemigo puede golpear una copia en vez de a ti. Defensa fuerte, sin concentración."},
 "Phantasmal Force":{a:"Acción",r:"18 m (60 pies)",d:"Conc. 1 min",c:1,t:"Salv. INT",dm:"1d6 psíquico",e:"SÍ HACE DAÑO. Ilusión metida en su mente: si falla, la cree real y recibe 1d6 psíquico por turno si la ilusión podría dañarlo."},
 "See Invisibility":{a:"Acción",r:"Personal",d:"1 hora",c:0,t:"—",dm:"",e:"Ves criaturas y objetos invisibles, y el Plano Etéreo. Sin daño."},
-"Shatter":{a:"Acción",r:"18 m (60 pies)",d:"Instantáneo",c:0,t:"Salv. CON",dm:"3d8 trueno",e:"SÍ HACE DAÑO EN ÁREA. Esfera de 3 m: 3d8 de trueno a todos los que fallen (mitad si superan). Tu mejor daño de área. +1d8 por nivel extra."},
+"Shatter":{a:"Acción",r:"18 m (60 pies)",d:"Instantáneo",c:0,t:"Salv. CON",dm:"3d8 trueno",e:"SÍ HACE DAÑO EN ÁREA. Esfera de 3 m: 3d8 de trueno a todos los que fallen (mitad si superan). Tu mejor daño de área. +1d8 por nivel extra.",up:"+1d8 trueno por nivel adicional"},
 "Silence":{a:"Acción / Ritual",r:"36 m (120 pies)",d:"Conc. 10 min",c:1,ri:1,t:"—",dm:"",e:"Esfera de 6 m sin sonido: dentro nadie puede lanzar conjuros con componente verbal. Anula magos enemigos. Sin daño."},
 "Suggestion":{a:"Acción",r:"9 m (30 pies)",d:"Conc. 8 horas",c:1,t:"Salv. SAB",dm:"",e:"Sugieres una acción razonable (máx. 25 palabras) y si falla, la cumple. No puede ser algo obviamente dañino para él. Sin daño."},
 "Zone of Truth":{a:"Acción",r:"18 m (60 pies)",d:"10 min",c:0,t:"Salv. CAR",dm:"",e:"Esfera de 4,5 m: quien falle NO puede decir mentiras deliberadas. Tú sabes quién superó la salvación. Sin concentración. Sin daño."},
 "Misty Step":{a:"Acción adicional",r:"Personal",d:"Instantáneo",c:0,t:"—",dm:"",e:"Te teletransportas hasta 9 m a un espacio que veas. Con Acción adicional: escape perfecto."},
 "Pass without Trace":{a:"Acción",r:"Personal (9 m)",d:"Conc. 1 hora",c:1,t:"—",dm:"",e:"Tú y los aliados cerca ganan +10 a Sigilo y no dejan rastro. Sin daño."},
 "Ray of Enfeeblement":{a:"Acción",r:"18 m (60 pies)",d:"Conc. 1 min",c:1,t:"Salv. CON",dm:"−1d8 a su daño",e:"NO hace daño. Si falla: Desventaja en pruebas de FUE y resta 1d8 al daño de todos sus ataques. Si supera: solo Desventaja en su siguiente ataque."}
+};
+
+const SPELL_SCALING = {
+"Acid Splash":{sc:"1d6→2d6→3d6→4d6 (nv5/11/17)"},
+"Blight":{up:"+1d8 por cada nivel por encima del 4"},
+"Blinding Smite":{up:"+1d8 por cada nivel por encima del 3"},
+"Blur":{up:"+1d6 por cada nivel por encima del 1"},
+"Burning Hands":{up:"+1d6 por cada nivel por encima del 1"},
+"Call Lightning":{up:"+1d10 por cada nivel por encima del 3"},
+"Chill Touch":{sc:"1d10→2d10→3d10→4d10 (nv5/11/17)"},
+"Chromatic Orb":{up:"+1d8 por cada nivel por encima del 1"},
+"Circle of Death":{up:"+2d8 por cada nivel por encima del 6"},
+"Cloudkill":{up:"+1d8 por cada nivel por encima del 5"},
+"Cone of Cold":{up:"+1d8 por cada nivel por encima del 5"},
+"Conjure Animals":{up:"+1d10 por cada nivel por encima del 3"},
+"Conjure Barrage":{up:"+1d8 por cada nivel por encima del 3"},
+"Conjure Celestial":{up:"+1d12 por cada nivel por encima del 7"},
+"Conjure Elemental":{up:"+2d8 por cada nivel por encima del 5"},
+"Conjure Fey":{up:"+2d12 por cada nivel por encima del 6"},
+"Conjure Minor Elementals":{up:"+2d8 por cada nivel por encima del 4"},
+"Conjure Volley":{up:"+1d8 por cada nivel por encima del 5"},
+"Conjure Woodland Beings":{up:"+1d8 por cada nivel por encima del 5"},
+"Crown of Madness":{up:"+2d8 por cada nivel por encima del 1"},
+"Crusader's Mantle":{up:"+2d8 por cada nivel por encima del 1"},
+"Cure Wounds":{up:"+2d8 por cada nivel por encima del 1"},
+"Death Ward":{up:"+1d6 por cada nivel por encima del 7"},
+"Delayed Blast Fireball":{up:"+1d6 por cada nivel por encima del 7"},
+"Disintegrate":{up:"+3d6 por cada nivel por encima del 6"},
+"Divine Favor":{up:"+1d8 por cada nivel por encima del 1"},
+"Divine Smite":{up:"+1d8 por cada nivel por encima del 1"},
+"Dragons Breath Ot":{up:"+1d6 por cada nivel por encima del 2"},
+"Eldritch Blast":{sc:"1 rayo→2 (nv5)→3 (nv11)→4 (nv17)"},
+"Ensnaring Strike":{up:"+1d6 por cada nivel por encima del 1"},
+"Finger of Death":{up:"+1d6 por cada nivel por encima del 3"},
+"Fire Bolt":{sc:"1d10→2d10 (nv5)→3d10 (nv11)→4d10 (nv17)"},
+"Fire Storm":{up:"+1d6 por cada nivel por encima del 2"},
+"Fireball":{up:"+1d6 por cada nivel por encima del 3"},
+"Flame Blade":{up:"+1d6 por cada nivel por encima del 2"},
+"Flame Strike":{up:"+1d6 por cada nivel por encima del 5"},
+"Flaming Sphere":{up:"+1d6 por cada nivel por encima del 2"},
+"Frostbite":{sc:"1d6→2d6→3d6→4d6 (nv5/11/17)"},
+"Guidance":{up:"+1d6 por cada nivel por encima del 1"},
+"Guiding Bolt":{up:"+1d6 por cada nivel por encima del 1"},
+"Gust of Wind":{up:"+1d10 por cada nivel por encima del 1"},
+"Hail of Thorns":{up:"+1d10 por cada nivel por encima del 1"},
+"Healing Word":{up:"+2d4 por cada nivel por encima del 1"},
+"Heat Metal":{up:"+1d8 por cada nivel por encima del 2"},
+"Hellish Rebuke":{up:"+1d10 por cada nivel por encima del 1"},
+"Holy Aura":{up:"+1d6 por cada nivel por encima del 3"},
+"Hunger of Hadar":{up:"+1d6 por cada nivel por encima del 3"},
+"Hypnotic Pattern":{up:"+1d6 por cada nivel por encima del 1"},
+"Ice Knife":{up:"+1d6 por cada nivel por encima del 1"},
+"Incendiary Cloud":{up:"+1d10 por cada nivel por encima del 1"},
+"Inflict Wounds":{up:"+1d10 por cada nivel por encima del 1"},
+"Insect Plague":{up:"+1d10 por cada nivel por encima del 5"},
+"Lightning Bolt":{up:"+1d6 por cada nivel por encima del 3"},
+"Magic Missile":{up:"+1 dardo por cada nivel superior"},
+"Mass Cure Wounds":{up:"+1d8 por cada nivel por encima del 5"},
+"Mass Heal":{up:"+1d4 por cada nivel por encima del 3"},
+"Mass Healing Word":{up:"+1d4 por cada nivel por encima del 3"},
+"Melfs Acid Arrow":{up:"+1d4 por cada nivel por encima del 2"},
+"Mind Sliver":{up:"+1d8 por cada nivel por encima del 2",sc:"1d6→2d6→3d6→4d6 (nv5/11/17)"},
+"Mind Spike":{up:"+1d8 por cada nivel por encima del 2"},
+"Moonbeam":{up:"+1d10 por cada nivel por encima del 2"},
+"Otiluke's Freezing Sphere":{up:"+1d6 por cada nivel por encima del 6"},
+"Phantasmal Force":{up:"+1d10 por cada nivel por encima del 4"},
+"Phantasmal Killer":{up:"+1d10 por cada nivel por encima del 4"},
+"Poison Spray":{sc:"1d12→2d12→3d12→4d12 (nv5/11/17)"},
+"Power Word Heal":{up:"+1d8 por cada nivel por encima del 2"},
+"Power Word Kill":{up:"+1d8 por cada nivel por encima del 2"},
+"Power Word Stun":{up:"+1d8 por cada nivel por encima del 2"},
+"Prayer of Healing":{up:"+1d8 por cada nivel por encima del 2"},
+"Produce Flame":{sc:"1d8→2d8→3d8→4d8 (nv5/11/17)"},
+"Ray of Enfeeblement":{up:"+1d8 por cada nivel por encima del 1"},
+"Ray of Frost":{up:"+1d8 por cada nivel por encima del 1",sc:"1d8→2d8 (nv5)→3d8 (nv11)→4d8 (nv17)"},
+"Ray of Sickness":{up:"+1d8 por cada nivel por encima del 1"},
+"Sacred Flame":{sc:"1d8→2d8→3d8→4d8 (nv5/11/17)"},
+"Searing Smite":{up:"+1d6 por cada nivel por encima del 1"},
+"Shapechange":{up:"+1d8 por cada nivel por encima del 2"},
+"Shatter":{up:"+1d8 por cada nivel por encima del 2"},
+"Shillelagh":{up:"+1d6 por cada nivel por encima del 2"},
+"Shining Smite":{up:"+1d6 por cada nivel por encima del 2"},
+"Shocking Grasp":{sc:"1d8→2d8→3d8→4d8 (nv5/11/17)"},
+"Sorcerous Burst":{sc:"1d8→2d8→3d8→4d8 (nv5/11/17)"},
+"Staggering Smite":{up:"+1d6 por cada nivel por encima del 4"},
+"Starry Wisp":{sc:"1d8→2d8→3d8→4d8 (nv5/11/17)"},
+"Thorn Whip":{up:"+1d6 por cada nivel por encima del 1",sc:"1d6→2d6→3d6→4d6 (nv5/11/17)"},
+"Thunderclap":{up:"+1d6 por cada nivel por encima del 1",sc:"1d6→2d6→3d6→4d6 (nv5/11/17)"},
+"Thunderous Smite":{up:"+1d6 por cada nivel por encima del 1"},
+"Thunderwave":{up:"+1d8 por cada nivel por encima del 1"},
+"Toll the Dead":{sc:"1d8/1d12→ 2→3→4 dados (nv5/11/17)"},
+"Vampiric Touch":{up:"+1d6 por cada nivel por encima del 3"},
+"Vicious Mockery":{sc:"1d6→2d6→3d6→4d6 (nv5/11/17)"},
+"Wall of Fire":{up:"+1d8 por cada nivel por encima del 4"},
+"Wall of Thorns":{up:"+1d8 por cada nivel por encima del 6"},
+"Word of Radiance":{sc:"1d6→2d6→3d6→4d6 (nv5/11/17)"}
 };
 
 const SPELL_LISTS = {"Bardo":{"0":["Blade Ward","Dancing Lights","Friends","Light","Mage Hand","Mending","Message","Minor Illusion","Prestidigitation","Starry Wisp","Thunderclap","True Strike","Vicious Mockery"],"1":["Animal Friendship","Bane","Charm Person","Color Spray","Command","Comprehend Languages","Cure Wounds","Detect Magic","Disguise Self","Dissonant Whispers","Faerie Fire","Feather Fall","Healing Word","Heroism","Identify","Illusory Script","Longstrider","Silent Image","Sleep","Speak with Animals","Tasha's Hideous Laughter","Thunderwave","Unseen Servant"],"2":["Aid","Animal Messenger","Blindness/Deafness","Calm Emotions","Cloud of Daggers","Crown of Madness","Detect Thoughts","Enhance Ability","Enlarge/Reduce","Enthrall","Heat Metal","Hold Person","Invisibility","Knock","Lesser Restoration","Locate Animals or Plants","Locate Object","Magic Mouth","Mirror Image","Phantasmal Force","See Invisibility","Shatter","Silence","Suggestion","Zone of Truth"],"3":["Bestow Curse","Clairvoyance","Dispel Magic","Fear","Feign Death","Glyph of Warding","Hypnotic Pattern","Leomund's Tiny Hut","Major Image","Mass Healing Word","Nondetection","Plant Growth","Sending","Slow","Speak with Dead","Speak with Plants","Stinking Cloud","Tongues"],"4":["Charm Monster","Compulsion","Confusion","Dimension Door","Fount of Moonlight","Freedom of Movement","Greater Invisibility","Hallucinatory Terrain","Locate Creature","Phantasmal Killer","Polymorph"],"5":["Animate Objects","Dominate Person","Dream","Geas","Greater Restoration","Hold Monster","Legend Lore","Mass Cure Wounds","Mislead","Modify Memory","Planar Binding","Raise Dead","Rary's Telepathic Bond","Scrying","Seeming","Synaptic Static","Teleportation Circle","Yolande's Regal Presence"],"6":["Eyebite","Find the Path","Guards and Wards","Heroes' Feast","Mass Suggestion","Otto's Irresistible Dance","Programmed Illusion","True Seeing"],"7":["Etherealness","Forcecage","Mirage Arcane","Mordenkainen's Magnificent Mansion","Mordenkainen's Sword","Power Word Fortify","Prismatic Spray","Project Image","Regenerate","Resurrection","Symbol","Teleport"],"8":["Antipathy/Sympathy","Befuddlement","Dominate Monster","Glibness","Mind Blank","Power Word Stun"],"9":["Foresight","Power Word Heal","Power Word Kill","Prismatic Wall","True Polymorph"]},"Clérigo":{"0":["Guidance","Light","Mending","Resistance","Sacred Flame","Spare the Dying","Thaumaturgy","Toll the Dead","Word of Radiance"],"1":["Bane","Bless","Command","Create or Destroy Water","Cure Wounds","Detect Evil and Good","Detect Magic","Detect Poison and Disease","Guiding Bolt","Healing Word","Inflict Wounds","Protection from Evil and Good","Purify Food and Drink","Sanctuary","Shield of Faith"],"2":["Aid","Augury","Blindness/Deafness","Calm Emotions","Continual Flame","Enhance Ability","Find Traps","Gentle Repose","Hold Person","Lesser Restoration","Locate Object","Prayer of Healing","Protection from Poison","Silence","Spiritual Weapon","Warding Bond","Zone of Truth"],"3":["Animate Dead","Aura of Vitality","Beacon of Hope","Bestow Curse","Clairvoyance","Create Food and Water","Daylight","Dispel Magic","Feign Death","Glyph of Warding","Magic Circle","Mass Healing Word","Meld into Stone","Protection from Energy","Remove Curse","Revivify","Sending","Speak with Dead","Spirit Guardians","Tongues","Water Walk"],"4":["Aura of Life","Aura of Purity","Banishment","Control Water","Death Ward","Freedom of Movement","Guardian of Faith","Locate Creature","Stone Shape"],"5":["Circle of Power","Commune","Contagion","Dispel Evil and Good","Flame Strike","Greater Restoration","Insect Plague","Legend Lore","Mass Cure Wounds","Planar Binding","Raise Dead","Scrying","Summon Celestial"],"6":["Blade Barrier","Create Undead","Find the Path","Forbiddance","Harm","Heal","Heroes' Feast","Planar Ally","Sunbeam","True Seeing","Word of Recall"],"7":["Conjure Celestial","Divine Word","Etherealness","Fire Storm","Plane Shift","Power Word Fortify","Regenerate","Resurrection","Symbol"],"8":["Antimagic Field","Control Weather","Earthquake","Holy Aura","Sunburst"],"9":["Astral Projection","Mass Heal","Power Word Heal","True Resurrection"]},"Druida":{"0":["Druidcraft","Elementalism","Guidance","Mending","Message","Poison Spray","Produce Flame","Resistance","Shillelagh","Spare the Dying","Starry Wisp","Thorn Whip","Thunderclap"],"1":["Animal Friendship","Charm Person","Create or Destroy Water","Cure Wounds","Detect Magic","Detect Poison and Disease","Entangle","Faerie Fire","Fog Cloud","Goodberry","Healing Word","Ice Knife","Jump","Longstrider","Protection from Evil and Good","Purify Food and Drink","Speak with Animals","Thunderwave"],"2":["Aid","Animal Messenger","Augury","Barkskin","Beast Sense","Continual Flame","Darkvision","Enhance Ability","Enlarge/Reduce","Find Traps","Flame Blade","Flaming Sphere","Gust of Wind","Heat Metal","Hold Person","Lesser Restoration","Locate Animals or Plants","Locate Object","Moonbeam","Pass without Trace","Protection from Poison","Spike Growth","Summon Beast"],"3":["Aura of Vitality","Call Lightning","Conjure Animals","Daylight","Dispel Magic","Elemental Weapon","Feign Death","Meld into Stone","Plant Growth","Protection from Energy","Revivify","Sleet Storm","Speak with Plants","Summon Fey","Water Breathing","Water Walk","Wind Wall"],"4":["Blight","Charm Monster","Confusion","Conjure Minor Elementals","Conjure Woodland Beings","Control Water","Dominate Beast","Fire Shield","Fount of Moonlight","Freedom of Movement","Giant Insect","Grasping Vine","Hallucinatory Terrain","Ice Storm","Locate Creature","Polymorph","Stone Shape","Stoneskin","Summon Elemental","Wall of Fire"],"5":["Antilife Shell","Awaken","Commune with Nature","Cone of Cold","Conjure Elemental","Contagion","Geas","Greater Restoration","Insect Plague","Mass Cure Wounds","Planar Binding","Reincarnate","Scrying","Tree Stride","Wall of Stone"],"6":["Conjure Fey","Find the Path","Flesh to Stone","Heal","Heroes' Feast","Move Earth","Sunbeam","Transport via Plants","Wall of Thorns","Wind Walk"],"7":["Fire Storm","Mirage Arcane","Plane Shift","Regenerate","Reverse Gravity","Symbol"],"8":["Antipathy/Sympathy","Befuddlement","Control Weather","Earthquake","Incendiary Cloud","Sunburst","Tsunami"],"9":["Foresight","Shapechange","Storm of Vengeance","True Resurrection"]},"Paladín":{"1":["Bless","Command","Compelled Duel","Cure Wounds","Detect Evil and Good","Detect Magic","Detect Poison and Disease","Divine Favor","Divine Smite","Heroism","Protection from Evil and Good","Purify Food and Drink","Searing Smite","Shield of Faith","Thunderous Smite","Wrathful Smite"],"2":["Aid","Find Steed","Gentle Repose","Lesser Restoration","Locate Object","Magic Weapon","Prayer of Healing","Protection from Poison","Shining Smite","Warding Bond","Zone of Truth"],"3":["Aura of Vitality","Blinding Smite","Create Food and Water","Crusader's Mantle","Daylight","Dispel Magic","Elemental Weapon","Magic Circle","Remove Curse","Revivify"],"4":["Aura of Life","Aura of Purity","Banishment","Death Ward","Locate Creature","Staggering Smite"],"5":["Banishing Smite","Circle of Power","Destructive Wave","Dispel Evil and Good","Greater Restoration","Raise Dead","Summon Celestial"]},"Explorador":{"1":["Alarm","Animal Friendship","Cure Wounds","Detect Magic","Detect Poison and Disease","Ensnaring Strike","Entangle","Fog Cloud","Goodberry","Hail of Thorns","Hunter's Mark","Jump","Longstrider","Speak with Animals"],"2":["Aid","Animal Messenger","Barkskin","Beast Sense","Cordon of Arrows","Darkvision","Enhance Ability","Find Traps","Gust of Wind","Lesser Restoration","Locate Animals or Plants","Locate Object","Magic Weapon","Pass without Trace","Protection from Poison","Silence","Spike Growth","Summon Beast"],"3":["Conjure Animals","Conjure Barrage","Daylight","Dispel Magic","Elemental Weapon","Lightning Arrow","Meld into Stone","Nondetection","Plant Growth","Protection from Energy","Revivify","Speak with Plants","Summon Fey","Water Breathing","Water Walk","Wind Wall"],"4":["Conjure Woodland Beings","Dominate Beast","Freedom of Movement","Grasping Vine","Locate Creature","Stoneskin","Summon Elemental"],"5":["Commune with Nature","Greater Restoration","Steel Wind Strike","Swift Quiver"]},"Hechicero":{"0":["Acid Splash","Blade Ward","Chill Touch","Dancing Lights","Elementalism","Fire Bolt","Friends","Light","Mage Hand","Mending","Message","Mind Sliver","Minor Illusion","Poison Spray","Prestidigitation","Ray of Frost","Shocking Grasp","Sorcerous Burst","Thunderclap","True Strike"],"1":["Burning Hands","Charm Person","Chromatic Orb","Color Spray","Detect Magic","Disguise Self","Expeditious Retreat","False Life","Feather Fall","Fog Cloud","Grease","Ice Knife","Jump","Mage Armor","Magic Missile","Ray of Sickness","Shield","Silent Image","Sleep","Thunderwave","Witch Bolt"],"2":["Alter Self","Arcane Vigor","Blur","Cloud of Daggers","Crown of Madness","Darkness","Darkvision","Detect Thoughts","Enhance Ability","Enlarge/Reduce","Flame Blade","Flaming Sphere","Gust of Wind","Hold Person","Invisibility","Knock","Levitate","Magic Weapon","Mirror Image","Misty Step","Phantasmal Force","Scorching Ray","See Invisibility","Shatter","Spider Climb","Suggestion","Web"],"3":["Blink","Clairvoyance","Counterspell","Daylight","Dispel Magic","Fear","Fireball","Gaseous Form","Haste","Hypnotic Pattern","Lightning Bolt","Major Image","Protection from Energy","Sleet Storm","Slow","Stinking Cloud","Tongues","Vampiric Touch","Water Breathing","Water Walk"],"4":["Banishment","Blight","Charm Monster","Confusion","Dimension Door","Dominate Beast","Fire Shield","Greater Invisibility","Ice Storm","Polymorph","Stoneskin","Vitriolic Sphere","Wall of Fire"],"5":["Animate Objects","Bigby's Hand","Cloudkill","Cone of Cold","Creation","Dominate Person","Hold Monster","Insect Plague","Seeming","Synaptic Static","Telekinesis","Teleportation Circle","Wall of Stone"],"6":["Arcane Gate","Chain Lightning","Circle of Death","Disintegrate","Eyebite","Flesh to Stone","Mass Suggestion","Move Earth","Sunbeam","True Seeing"],"7":["Delayed Blast Fireball","Etherealness","Finger of Death","Fire Storm","Plane Shift","Prismatic Spray","Reverse Gravity","Teleport"],"8":["Demiplane","Dominate Monster","Earthquake","Incendiary Cloud","Power Word Stun","Sunburst"],"9":["Gate","Meteor Swarm","Power Word Kill","Time Stop","Wish"]},"Brujo":{"0":["Blade Ward","Chill Touch","Friends","Mage Hand","Mind Sliver","Minor Illusion","Poison Spray","Prestidigitation","Thunderclap","Toll the Dead"],"1":["Armor of Agathys","Arms of Hadar","Bane","Charm Person","Comprehend Languages","Detect Magic","Expeditious Retreat","Hellish Rebuke","Hex","Illusory Script","Protection from Evil and Good","Speak with Animals","Tasha's Hideous Laughter","Unseen Servant","Witch Bolt"],"2":["Cloud of Daggers","Crown of Madness","Darkness","Enthrall","Hold Person","Invisibility","Mirror Image","Misty Step","Ray of Enfeeblement","Spider Climb","Suggestion"],"3":["Counterspell","Dispel Magic","Fear","Fly","Gaseous Form","Hunger of Hadar","Hypnotic Pattern","Magic Circle","Major Image","Remove Curse","Summon Fey","Summon Undead","Tongues","Vampiric Touch"],"4":["Banishment","Blight","Charm Monster","Dimension Door","Hallucinatory Terrain","Summon Aberration"],"5":["Contact Other Plane","Dream","Hold Monster","Mislead","Planar Binding","Scrying","Seeming","Synaptic Static","Teleportation Circle"],"6":["Arcane Gate","Circle of Death","Create Undead","Eyebite"],"7":["Etherealness","Finger of Death","Forcecage","Plane Shift"],"8":["Befuddlement","Demiplane","Dominate Monster","Glibness","Power Word Stun"],"9":["Astral Projection","Foresight","Gate","Imprisonment","Power Word Kill","True Polymorph","Weird"]},"Mago":{"0":["Acid Splash","Blade Ward","Chill Touch","Dancing Lights","Elementalism","Fire Bolt","Friends","Light","Mage Hand","Mending","Message","Mind Sliver","Minor Illusion","Poison Spray","Prestidigitation","Ray of Frost","Shocking Grasp","Thunderclap","Toll the Dead","True Strike"],"1":["Alarm","Burning Hands","Charm Person","Chromatic Orb","Color Spray","Comprehend Languages","Detect Magic","Disguise Self","Expeditious Retreat","False Life","Feather Fall","Find Familiar","Fog Cloud","Grease","Ice Knife","Identify","Illusory Script","Jump","Longstrider","Mage Armor","Magic Missile","Protection from Evil and Good","Ray of Sickness","Shield","Silent Image","Sleep","Tasha's Hideous Laughter","Tenser's Floating Disk","Thunderwave","Unseen Servant","Witch Bolt"],"2":["Alter Self","Arcane Vigor","Augury","Blindness/Deafness","Blur","Cloud of Daggers","Continual Flame","Crown of Madness","Darkness","Darkvision","Detect Thoughts","Enhance Ability","Enlarge/Reduce","Flaming Sphere","Gentle Repose","Gust of Wind","Hold Person","Invisibility","Knock","Levitate","Locate Object","Magic Mouth","Magic Weapon","Mirror Image","Misty Step","Nystul's Magic Aura","Phantasmal Force","Ray of Enfeeblement","Scorching Ray","See Invisibility","Shatter","Spider Climb","Suggestion","Web"],"3":["Animate Dead","Bestow Curse","Blink","Clairvoyance","Counterspell","Dispel Magic","Fear","Feign Death","Fireball","Gaseous Form","Glyph of Warding","Haste","Hypnotic Pattern","Leomund's Tiny Hut","Lightning Bolt","Magic Circle","Major Image","Nondetection","Phantom Steed","Protection from Energy","Remove Curse","Sending","Sleet Storm","Slow","Speak with Dead","Stinking Cloud","Summon Fey","Summon Undead","Tongues","Vampiric Touch","Water Breathing"],"4":["Arcane Eye","Banishment","Blight","Charm Monster","Confusion","Conjure Minor Elementals","Control Water","Dimension Door","Evard's Black Tentacles","Fabricate","Fire Shield","Greater Invisibility","Hallucinatory Terrain","Ice Storm","Locate Creature","Mordenkainen's Faithful Hound","Mordenkainen's Private Sanctum","Otiluke's Resilient Sphere","Phantasmal Killer","Polymorph","Stone Shape","Stoneskin","Summon Aberration","Summon Construct","Summon Elemental","Vitriolic Sphere","Wall of Fire"],"5":["Animate Objects","Bigby's Hand","Circle of Power","Cloudkill","Cone of Cold","Conjure Elemental","Contact Other Plane","Creation","Dominate Person","Dream","Geas","Hold Monster","Jallarzi's Storm of Radiance","Legend Lore","Mislead","Modify Memory","Passwall","Planar Binding","Rary's Telepathic Bond","Scrying","Seeming","Steel Wind Strike","Summon Dragon","Synaptic Static","Telekinesis","Teleportation Circle","Wall of Force","Wall of Stone","Yolande's Regal Presence"],"6":["Arcane Gate","Chain Lightning","Circle of Death","Contingency","Create Undead","Disintegrate","Drawmij's Instant Summons","Eyebite","Flesh to Stone","Globe of Invulnerability","Guards and Wards","Magic Jar","Mass Suggestion","Move Earth","Otiluke's Freezing Sphere","Otto's Irresistible Dance","Programmed Illusion","Sunbeam","Tasha's Bubbling Cauldron","True Seeing","Wall of Ice"],"7":["Delayed Blast Fireball","Etherealness","Finger of Death","Forcecage","Mirage Arcane","Mordenkainen's Magnificent Mansion","Mordenkainen's Sword","Plane Shift","Prismatic Spray","Project Image","Reverse Gravity","Sequester","Simulacrum","Symbol","Teleport"],"8":["Antimagic Field","Antipathy/Sympathy","Befuddlement","Clone","Control Weather","Demiplane","Dominate Monster","Incendiary Cloud","Maze","Mind Blank","Power Word Stun","Sunburst","Telepathy"],"9":["Astral Projection","Foresight","Imprisonment","Meteor Swarm","Power Word Kill","Prismatic Wall","Shapechange","Time Stop","True Polymorph","Weird","Wish"]}};
@@ -881,6 +985,61 @@ function applyRacialSpells(){
 
 
 
+
+/* ---------- Rasgos de clase y subclase (PHB 2024, resúmenes propios) ---------- */
+const CLASS_FEATURES = {
+ "Bardo":[
+  {lv:1,name:"Inspiración Bárdica",e:"Con acción adicional das un dado d6 a un aliado a 18 m. Puede sumarlo a una tirada de ataque, prueba o salvación (decide tras ver el d20, antes del resultado). Usos = tu mod. de Carisma, recuperas con descanso. El dado sube a d8 (nv5), d10 (nv10), d12 (nv15)."},
+  {lv:1,name:"Lanzamiento de Conjuros",e:"Lanzas conjuros de bardo usando Carisma. Preparas un número de conjuros según tu nivel."},
+  {lv:2,name:"Pericia",e:"Duplicas tu competencia en 2 habilidades. Otras 2 al nivel 9."},
+  {lv:2,name:"Toque de Todos los Oficios",e:"Sumas la mitad de tu bono de competencia (redondeo abajo) a cualquier prueba de característica en la que NO seas competente. También a la iniciativa."},
+  {lv:3,name:"Subclase de Bardo (Colegio)",e:"Eliges tu Colegio Bárdico, que te da rasgos aquí y en niveles 6 y 14."},
+  {lv:4,name:"Mejora de Puntuación",e:"+2 a una característica, +1 a dos, o una dote."},
+  {lv:5,name:"Fuente de Inspiración",e:"Recuperas todos los usos de Inspiración Bárdica también con descanso corto, y puedes gastar un espacio de conjuro para recuperar un uso."},
+  {lv:7,name:"Contra-encanto",e:"Con acción, tú y aliados a 9 m tienen Ventaja en salvaciones contra Asustado y Encantado hasta el inicio de tu próximo turno."},
+  {lv:10,name:"Secretos Mágicos",e:"Aprendes 2 conjuros de CUALQUIER clase (clérigo, druida, mago) que cuentan como de bardo."}
+ ],
+ "Hechicero":[
+  {lv:1,name:"Lanzamiento de Conjuros",e:"Lanzas conjuros de hechicero usando Carisma. Es magia innata."},
+  {lv:1,name:"Hechicería Innata",e:"Tu característica de conjuro es Carisma. Ganas la subclase que define tu origen mágico."},
+  {lv:2,name:"Fuente de Magia — Puntos de Hechicería",e:"Tienes Puntos de Hechicería = tu nivel de hechicero. Los conviertes en espacios de conjuro, o gastas espacios para crear puntos. Se recuperan con descanso largo."},
+  {lv:2,name:"Metamagia (nv2)",e:"Aprendes 2 opciones de Metamagia para modificar tus conjuros gastando puntos (p. ej. Conjuro Gemelo, Conjuro Acelerado, Conjuro Sutil, Conjuro Potente)."},
+  {lv:3,name:"Subclase de Hechicero (Origen)",e:"Tu origen mágico (Dracónico, Magia Salvaje, Aberrante, etc.) te da rasgos aquí y en niveles 6, 14 y 18."},
+  {lv:4,name:"Mejora de Puntuación",e:"+2 a una característica, +1 a dos, o una dote."},
+  {lv:5,name:"Restauración Mágica",e:"Con acción, gastas puntos de hechicería para recuperar espacios de conjuro durante un descanso corto (1×/descanso largo)."},
+  {lv:7,name:"Metamagia (nv7)",e:"Aprendes una opción más de Metamagia (total 3)."}
+ ]
+};
+const SUBCLASS_FEATURES = {
+ "Colegio del Conocimiento":[
+  {lv:3,name:"Competencias Adicionales",e:"Ganas competencia en 3 habilidades a tu elección."},
+  {lv:3,name:"Palabras Hirientes (Cutting Words)",e:"Reacción cuando una criatura a 18 m hace una tirada de ataque, prueba de característica o tirada de daño: gastas 1 Inspiración Bárdica y RESTAS ese dado de su tirada. Puedes hacerlo tras ver el d20. Tu mejor herramienta defensiva."},
+  {lv:6,name:"Secretos Mágicos Adicionales",e:"Aprendes 2 conjuros de cualquier clase (clérigo, druida o mago), cuentan como de bardo."},
+  {lv:14,name:"Sabiduría Incomparable",e:"Cuando fallas una salvación, puedes gastar 1 Inspiración Bárdica para repetirla (usas el nuevo resultado)."}
+ ],
+ "Magia Salvaje":[
+  {lv:3,name:"Oleada de Magia Salvaje",e:"Cuando lanzas un conjuro de nivel 1+, el DM puede hacerte tirar en la tabla de Magia Salvaje (efectos caóticos aleatorios). También puedes forzar la tirada tú mismo."},
+  {lv:3,name:"Marea de Caos",e:"1×/descanso largo, ganas Ventaja en una tirada de ataque, prueba o salvación. Al usarla, el DM te hace tirar en la tabla de Magia Salvaje."},
+  {lv:6,name:"Doblar el Azar (Bend Luck)",e:"Reacción: gastas 2 puntos de hechicería para sumar o restar 1d4 a la tirada de otra criatura."},
+  {lv:14,name:"Caos Controlado",e:"Cuando tiras en la tabla de Magia Salvaje, tiras dos veces y eliges el resultado."},
+  {lv:18,name:"Conversión de Hechicería",e:"Puedes convertir puntos de hechicería en cualquier tipo de daño elemental para tus conjuros."}
+ ],
+ "Hechicería Aberrante":[
+  {lv:3,name:"Conjuros Psiónicos",e:"Siempre tienes preparados: Arms of Hadar, Calm Emotions, Detect Thoughts, Dissonant Whispers, Hunger of Hadar, Sending, Tasha's Mind Whip. Puedes lanzarlos con puntos de hechicería."},
+  {lv:3,name:"Habla Telepática",e:"Te comunicas telepáticamente con una criatura a la vista, alcance 9 m × tu nivel, durante un rato. Sin idioma común."},
+  {lv:6,name:"Hechicería Psiónica",e:"Al lanzar un Conjuro Psiónico de nivel 1+, puedes lanzarlo solo con puntos de hechicería (1 por nivel), sin componentes verbales ni somáticos. Magia silenciosa e inmóvil."},
+  {lv:6,name:"Defensas Psíquicas",e:"Tienes Resistencia al daño psíquico. Quien te dañe con psíquico o intente leer tu mente sufre consecuencias."},
+  {lv:14,name:"Revelación en Carne",e:"Gastas puntos de hechicería para transformarte: volar, nadar/respirar bajo agua, o ver en la oscuridad y a invisibles."},
+  {lv:18,name:"Implosión Deformante",e:"1×/descanso largo, te teletransportas y causas daño de fuerza en área a los enemigos cercanos al punto de origen."}
+ ]
+};
+function classFeaturesFor(){
+  const lv=+C.level||1;
+  const cf=(CLASS_FEATURES[C.cls]||[]).filter(f=>f.lv<=lv);
+  const sf=(SUBCLASS_FEATURES[C.subclass]||[]).filter(f=>f.lv<=lv);
+  return {cls:cf, sub:sf};
+}
+
 /* ---------- Dotes (PHB 2024). asi = características que puede subir +1 ---------- */
 const FEATS = {
 /* --- ORIGEN (nivel 1, sin requisitos) --- */
@@ -1089,7 +1248,7 @@ function renderPicker(){
       const flags=[]; if(info&&info.c)flags.push("Conc"); if(info&&info.ri)flags.push("Ritual");
       const dmg = info&&info.dm ? `<b style="color:var(--crimson)">${esc(info.dm)}</b> · ` : "";
       const it=el("div","item");
-      it.innerHTML=`<span class="spell-ic">${spellIcon(info,26)}</span><div class="ic"><div class="t">${esc(name)} <span class="tag">${l===0?"Truco":"Nv "+l}</span></div><div class="m">${dmg}${info?esc(info.e):"Resumen pendiente"}${flags.length?" · "+flags.join(" · "):""}</div></div>`;
+      it.innerHTML=`<span class="spell-ic">${spellIcon(info,30)}</span><div class="ic"><div class="t">${esc(name)} <span class="tag">${l===0?"Truco":"Nv "+l}</span></div><div class="m">${dmg}${info?esc(info.e):"Resumen pendiente"}${flags.length?" · "+flags.join(" · "):""}</div></div>`;
       const add=el("button","del"); add.innerHTML=ICON.plus; add.style.color="var(--sage)"; add.setAttribute("aria-label","Añadir "+name);
       add.onclick=()=>{ if(l===0) C.cantrips.push({name}); else C.spells.push({name,level:l,note:""}); save(); toast(name+" añadido"); renderPicker(); renderHeader(); };
       it.appendChild(add); body.appendChild(it);
@@ -1181,12 +1340,16 @@ function tabCore(p){
   const sk=el("div","card");
   sk.appendChild(el("div","card-h",'<span class="eyebrow">Salvaciones y habilidades</span><span class="muted-note">toca ⬚ comp/pericia</span>'));
   const jm=cardMount(sk);
-  const jrow=el("div","jrow");
-  const jbtn=el("button","chip"+(C.joat?" on":""), (C.joat?"✓ ":"")+"Toque de Todos los Oficios");
-  jbtn.onclick=()=>{ C.joat = C.joat?0:1; save(); renderMain(); };
-  jrow.appendChild(jbtn);
-  jrow.appendChild(el("span","jnote", C.joat ? `+${Math.floor(PB()/2)} a las habilidades sin competencia y a la iniciativa` : "Rasgo de Bardo nivel 2. Desactivado."));
-  jm.appendChild(jrow);
+  // Toque de Todos los Oficios: solo Bardo (nivel 2+)
+  const hasJoat = C.cls==="Bardo" && (+C.level||1)>=2;
+  if(hasJoat){
+    const jrow=el("div","jrow");
+    const jbtn=el("button","chip"+(C.joat?" on":""), (C.joat?"✓ ":"")+"Toque de Todos los Oficios");
+    jbtn.onclick=()=>{ C.joat = C.joat?0:1; save(); renderMain(); };
+    jrow.appendChild(jbtn);
+    jrow.appendChild(el("span","jnote", C.joat ? `+${Math.floor(PB()/2)} a las habilidades sin competencia y a la iniciativa` : "Rasgo de Bardo nivel 2. Desactivado."));
+    jm.appendChild(jrow);
+  } else if(C.joat){ C.joat=0; }
   ABILS.forEach(([a])=>{
     const block=el("div"); block.style.marginBottom="10px";
     const sv=el("div","lrow"); sv.style.borderBottom="2px solid var(--line2)";
@@ -1208,7 +1371,27 @@ function tabCore(p){
     jm.appendChild(block);
   });
   p.appendChild(sk);
+  tabClassFeatures(p);
   tabFeats(p);
+}
+
+function tabClassFeatures(p){
+  const f=classFeaturesFor();
+  if(!f.cls.length && !f.sub.length) return;
+  const card=el("div","card");
+  card.appendChild(el("div","card-h",`<span class="eyebrow">Rasgos de ${esc(C.cls||"clase")}</span><span class="muted-note">nivel ${C.level}</span>`));
+  const m=cardMount(card);
+  const addFeat=(f,isSub)=>{
+    const it=el("div","feat-row");
+    it.innerHTML=`<div class="feat-lv">${f.lv}</div><div class="feat-body"><div class="feat-name">${esc(f.name)}${isSub?' <span class="tag" style="color:var(--violet);border-color:var(--violet-dim)">colegio</span>':''}</div><div class="feat-desc">${esc(f.e)}</div></div>`;
+    m.appendChild(it);
+  };
+  f.cls.forEach(x=>addFeat(x,false));
+  if(f.sub.length){
+    m.appendChild(el("div","feat-sep",esc(C.subclass||"Subclase")));
+    f.sub.forEach(x=>addFeat(x,true));
+  }
+  p.appendChild(card);
 }
 
 /* ---------- TAB: COMBAT ---------- */
@@ -1235,9 +1418,9 @@ function tabCombat(p){
   // defense strip
   const strip=el("div","stat-strip");
   strip.innerHTML=`
-    <div class="stat-pill acpill"><div class="pill-ic">${spr(1,14,26)}</div><div class="v gold">${computeAC()}</div><div class="k">CA</div></div>
-    <div class="stat-pill"><div class="pill-ic">${spr(2,1,24)}</div><div class="v">${fmt(initBonus())}</div><div class="k">Iniciativa</div></div>
-    <div class="stat-pill"><div class="pill-ic">${spr(1,1,24)}</div><div class="v" style="font-size:17px">${C.speed||"—"}</div><div class="k">Velocidad</div></div>`;
+    <div class="stat-pill acpill"><div class="pill-ic">${spr(1,14,30)}</div><div class="v gold">${computeAC()}</div><div class="k">CA</div></div>
+    <div class="stat-pill"><div class="pill-ic">${spr(2,1,30)}</div><div class="v">${fmt(initBonus())}</div><div class="k">Iniciativa</div></div>
+    <div class="stat-pill"><div class="pill-ic">${spr(1,1,30)}</div><div class="v" style="font-size:17px">${C.speed||"—"}</div><div class="k">Velocidad</div></div>`;
   strip.children[0].onclick=openACSheet;
   strip.children[2].onclick=()=>editPrompt("Velocidad",C.speed,v=>{C.speed=v;},true);
   p.appendChild(strip);
@@ -1249,7 +1432,7 @@ function tabCombat(p){
   C.resources.forEach((r,i)=>{
     const box=el("div"); box.style.marginBottom="12px";
     const head=el("div"); head.style.cssText="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px";
-    const di=dieIcon(r.die,20); head.innerHTML=`<div style="display:flex;align-items:center;gap:7px"><b>${esc(r.name)}</b>${di?`<span class="die-ic">${di}</span>`:(r.die?`<span class="tag">${esc(r.die)}</span>`:"")} <small style="color:var(--muted)">${r.max-r.used}/${r.max}</small></div>`;
+    const di=dieIcon(r.die,22); head.innerHTML=`<div style="display:flex;align-items:center;gap:7px"><b>${esc(r.name)}</b>${di?`<span class="die-ic">${di}</span>`:(r.die?`<span class="tag">${esc(r.die)}</span>`:"")} <small style="color:var(--muted)">${r.max-r.used}/${r.max}</small></div>`;
     const del=el("button","del"); del.innerHTML=ICON.close; del.style.cssText="width:28px;height:28px;border-radius:8px;background:rgba(0,0,0,.25);border:1px solid var(--line);color:var(--crimson);display:grid;place-items:center";
     del.onclick=()=>{ C.resources.splice(i,1); save(); renderMain(); };
     head.appendChild(del); box.appendChild(head);
@@ -1418,7 +1601,7 @@ function cantripItem(mount,sp,i){
   const racial = sp.source==="racial";
   const inf=SPELL_INFO[sp.name];
   const sub = inf ? (inf.dm ? `<b style="color:var(--crimson)">${esc(inf.dm)}</b> · ${esc(inf.t)}` : "Sin daño · "+esc(inf.a)) : "";
-  it.innerHTML=`<span class="spell-ic">${spellIcon(inf,26)}</span><div class="ic"><div class="t">${esc(sp.name)}${racial?racialTag():""}</div>${sub?`<div class="m">${sub}</div>`:""}</div>`;
+  it.innerHTML=`<span class="spell-ic">${spellIcon(inf,30)}</span><div class="ic"><div class="t">${esc(sp.name)}${racial?racialTag():""}</div>${sub?`<div class="m">${sub}</div>`:""}</div>`;
   it.appendChild(infoBtn(sp.name,0));
   if(!racial){ const del=el("button","del"); del.innerHTML=ICON.close; del.onclick=()=>{ C.cantrips.splice(i,1); save(); renderMain(); }; it.appendChild(del); }
   mount.appendChild(it);
@@ -1431,7 +1614,7 @@ function spellItem(mount,sp,i){
   if(inf) sub = (inf.dm ? `<b style="color:var(--crimson)">${esc(inf.dm)}</b> · ${esc(inf.t)}` : `Sin daño · ${esc(inf.t&&inf.t!=="—"?inf.t:inf.a)}`) + (inf.c?" · Conc.":"");
   if(racial) sub += ' <span style="color:var(--gold)">· gratis 1×/desc. largo</span>';
   else if(sp.note) sub = esc(sp.note);
-  it.innerHTML=`<span class="spell-ic">${spellIcon(inf,26)}</span><div class="ic"><div class="t">${esc(sp.name)}${racial?racialTag():""}</div>${sub?`<div class="m">${sub}</div>`:""}</div>`;
+  it.innerHTML=`<span class="spell-ic">${spellIcon(inf,30)}</span><div class="ic"><div class="t">${esc(sp.name)}${racial?racialTag():""}</div>${sub?`<div class="m">${sub}</div>`:""}</div>`;
   it.appendChild(infoBtn(sp.name,sp.level));
   if(!racial){
     it.querySelector(".ic").onclick=()=>editPrompt("Nota para "+sp.name,sp.note||"",v=>{sp.note=v;},true);
@@ -1442,11 +1625,22 @@ function spellItem(mount,sp,i){
 }
 function showSpellInfo(name,level){
   const info=SPELL_INFO[name];
+  const scaling=SPELL_SCALING[name];
+  const sc = (info&&info.sc) || (scaling&&scaling.sc);
+  const up = (info&&info.up) || (scaling&&scaling.up);
   const flags=[]; if(info&&info.c)flags.push("Concentración"); if(info&&info.ri)flags.push("Ritual");
-  $("#infoTitle").innerHTML=`<span class="info-spell-ic">${spellIcon(info,34)}</span>${esc(name)}`;
+  $("#infoTitle").innerHTML=`<span class="info-spell-ic">${spellIcon(info,38)}</span>${esc(name)}`;
   $("#infoMeta").textContent=(level>0?("Nivel "+level):"Truco")+(flags.length?" · "+flags.join(" · "):"");
   const b=$("#infoBody");
-  if(!info){ b.textContent="Sin resumen para este conjuro todavía."; openSheet("#infoSheet"); return; }
+  if(!info){
+    if(sc||up){
+      const row2=(k,v,cls)=>v?`<div class="sr"><div class="sk">${k}</div><div class="sv ${cls||""}">${esc(v)}</div></div>`:"";
+      b.innerHTML=`<div class="sgrid">${sc?row2("Sube por nivel",sc,"scale"):""}${up?row2("Slot superior",up,"scale"):""}</div><p class="seff" style="color:var(--muted)">Resumen detallado no disponible para este conjuro. Consulta tu manual para el efecto completo.</p>`;
+    } else {
+      b.textContent="Sin resumen para este conjuro todavía.";
+    }
+    openSheet("#infoSheet"); return;
+  }
   const row=(k,v,cls)=>v?`<div class="sr"><div class="sk">${k}</div><div class="sv ${cls||""}">${esc(v)}</div></div>`:"";
   b.innerHTML =
     `<div class="sgrid">
@@ -1455,6 +1649,8 @@ function showSpellInfo(name,level){
        ${row("Duración",info.d)}
        ${row("Tirada",info.t)}
        ${row("Daño / efecto",info.dm,"dmg")}
+       ${sc?row("Sube por nivel",sc,"scale"):""}
+       ${up?row("Slot superior",up,"scale"):""}
      </div>
      <p class="seff">${esc(info.e)}</p>`;
   openSheet("#infoSheet");
@@ -1782,7 +1978,7 @@ function renderCharList(){
   const list=$("#charList"); list.innerHTML="";
   store.characters.forEach(ch=>{
     const it=el("div","char-item"+(ch.id===store.activeId?" active":""));
-    const av = avatarSprFor(ch,38);
+    const av = avatarSprFor(ch,40);
     it.innerHTML=`<div class="ci-emblem">${av || classIcon(ch.cls)}</div><div class="ci-main"><div class="nm">${esc(ch.name||"Sin nombre")}</div><div class="mt">${esc(ch.cls||"—")} · Nivel ${ch.level}</div></div>`;
     it.querySelector(".ci-main").onclick=()=>{ switchChar(ch.id); };
     if(store.characters.length>1){
