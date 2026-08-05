@@ -317,6 +317,42 @@ main{padding:16px 14px 44px;max-width:640px;margin:0 auto}
 .char-item .ci-main .mt{font-size:12px;color:var(--muted)}
 .char-item .mini{width:34px;height:34px;border-radius:9px;background:rgba(0,0,0,.25);border:1px solid var(--line);color:var(--crimson);display:grid;place-items:center;font-size:18px;flex:none}
 
+/* pantalla de selección de personaje */
+#charSelect{position:fixed;inset:0;z-index:90;overflow-y:auto;
+  background:
+    radial-gradient(ellipse 90% 50% at 50% 0%, rgba(139,92,246,.07), transparent 60%),
+    radial-gradient(ellipse 70% 40% at 50% 100%, rgba(200,155,60,.05), transparent 60%),
+    linear-gradient(180deg, #16141a, #0e0c10);
+  display:none;padding:calc(env(safe-area-inset-top) + 40px) 20px 40px}
+#charSelect.on{display:block;animation:fade .4s ease}
+.cs-inner{max-width:560px;margin:0 auto}
+.cs-title{font-family:'Cinzel',serif;font-size:40px;font-weight:700;color:var(--gold);text-align:center;letter-spacing:.04em;text-shadow:0 0 30px rgba(200,155,60,.35)}
+.cs-sub{text-align:center;color:var(--muted);font-size:13px;letter-spacing:.12em;text-transform:uppercase;margin:6px 0 30px}
+.cs-new{width:100%;display:flex;align-items:center;gap:16px;padding:20px;border-radius:16px;
+  background:linear-gradient(180deg,rgba(200,155,60,.1),rgba(200,155,60,.03));
+  border:1.5px solid var(--gold-dim);margin-bottom:30px;text-align:left;transition:transform .15s,box-shadow .2s;
+  box-shadow:0 4px 20px rgba(0,0,0,.3)}
+.cs-new:active{transform:scale(.99)}
+.cs-new-plus{width:44px;height:44px;flex:none;border-radius:50%;border:2px solid var(--gold);color:var(--gold);display:grid;place-items:center;font-size:28px;font-weight:300;line-height:1}
+.cs-new b{font-family:'Cinzel',serif;font-size:22px;color:var(--gold);display:block}
+.cs-new small{color:var(--muted);font-size:13px}
+.cs-divider{display:flex;align-items:center;gap:14px;margin:0 0 20px;color:var(--faint)}
+.cs-divider::before,.cs-divider::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,transparent,var(--gold-dim),transparent)}
+.cs-divider span{font-family:'Cinzel',serif;font-size:20px;color:var(--text);letter-spacing:.02em}
+.cs-card{display:flex;align-items:center;gap:18px;padding:16px;border-radius:16px;
+  background:linear-gradient(180deg,var(--raised),var(--bg3));border:1.5px solid var(--gold-dim);
+  margin-bottom:16px;transition:transform .15s,box-shadow .2s,border-color .2s;position:relative;overflow:hidden;
+  box-shadow:0 4px 18px rgba(0,0,0,.35)}
+.cs-card::after{content:"";position:absolute;inset:0;border-radius:16px;background:linear-gradient(120deg,rgba(200,155,60,.1),transparent 40%);pointer-events:none}
+.cs-card:active{transform:scale(.985)}
+.cs-avatar{width:78px;height:78px;flex:none;border-radius:50%;display:grid;place-items:center;position:relative;
+  background:radial-gradient(circle at 50% 35%, rgba(200,155,60,.18), rgba(0,0,0,.4));
+  border:2px solid var(--gold);box-shadow:0 0 16px rgba(200,155,60,.25), inset 0 0 10px rgba(0,0,0,.5)}
+.cs-info{flex:1;min-width:0}
+.cs-name{font-family:'Cinzel',serif;font-size:26px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cs-meta{color:var(--muted);font-size:15px;margin-top:2px}
+.cs-del{width:34px;height:34px;flex:none;border-radius:10px;background:rgba(0,0,0,.3);border:1px solid var(--line);color:var(--crimson);display:grid;place-items:center;position:relative;z-index:2}
+
 /* splash de bienvenida */
 #splash{position:fixed;inset:0;z-index:100;display:grid;place-items:center;
   background:radial-gradient(ellipse at 50% 45%, #1d1a22, #0e0c10);
@@ -348,6 +384,19 @@ main{padding:16px 14px 44px;max-width:640px;margin:0 auto}
   <div class="splash-ring"></div>
   <div class="splash-title">Grimorio</div>
   <div class="splash-sub">Hoja de personaje · D&D 5e</div>
+</div>
+
+<div id="charSelect">
+  <div class="cs-inner">
+    <div class="cs-title">Grimorio</div>
+    <div class="cs-sub">Elige tu personaje</div>
+    <button class="cs-new" id="csNew">
+      <span class="cs-new-plus">+</span>
+      <span><b>Nuevo personaje</b><small>Crea uno desde cero</small></span>
+    </button>
+    <div class="cs-divider"><span>Tus personajes</span></div>
+    <div id="csList"></div>
+  </div>
 </div>
 
 <header>
@@ -1990,10 +2039,30 @@ function renderCharList(){
   });
 }
 function switchChar(id){ store.activeId=id; C=store.characters.find(c=>c.id===id); if(C.lineage===undefined)C.lineage=""; applyRacialSpells(); currentTab="core"; save(); closeSheets(); renderAll(); }
+
+/* ---------- Pantalla de selección de personaje ---------- */
+function renderCharSelect(){
+  const list=$("#csList"); list.innerHTML="";
+  store.characters.forEach(ch=>{
+    const card=el("div","cs-card");
+    const av=avatarSprFor(ch,54);
+    card.innerHTML=`<div class="cs-avatar">${av||classIcon(ch.cls)}</div><div class="cs-info"><div class="cs-name">${esc(ch.name||"Sin nombre")}</div><div class="cs-meta">${esc(ch.cls||"—")}${ch.subclass?" · "+esc(ch.subclass):""} · Nivel ${ch.level}</div></div>`;
+    card.onclick=()=>{ enterChar(ch.id); };
+    if(store.characters.length>1){
+      const del=el("button","cs-del"); del.innerHTML=ICON.trash;
+      del.onclick=e=>{ e.stopPropagation(); if(confirm("¿Borrar a "+(ch.name||"este personaje")+"?")){ store.characters=store.characters.filter(x=>x.id!==ch.id); if(store.activeId===ch.id){ store.activeId=store.characters[0].id; C=store.characters[0]; } save(); renderCharSelect(); } };
+      card.appendChild(del);
+    }
+    list.appendChild(card);
+  });
+}
+function showCharSelect(){ renderCharSelect(); $("#charSelect").classList.add("on"); }
+function enterChar(id){ $("#charSelect").classList.remove("on"); switchChar(id); }
 function renderAll(){ renderTabs(); renderMain(); renderHeader(); }
 
-$("#btnChars").onclick=()=>{ renderCharList(); openSheet("#charSheet"); };
+$("#btnChars").onclick=()=>{ showCharSelect(); };
 $("#btnNewChar").onclick=()=>{ const c=newCharacter(); store.characters.push(c); switchChar(c.id); };
+$("#csNew").onclick=()=>{ const c=newCharacter(); store.characters.push(c); enterChar(c.id); };
 $("#btnMenu").onclick=()=>{ updateSyncUI(); openSheet("#menuSheet"); };
 
 /* ============================================================ BACKUP: export / import */
@@ -2117,8 +2186,12 @@ async function drivePush(){
 /* ============================================================ BOOT */
 load();
 renderAll();
-// ocultar splash de bienvenida
-setTimeout(()=>{ const s=document.getElementById("splash"); if(s){ s.classList.add("hide"); setTimeout(()=>s.remove(),650); } }, 850);
+// tras el splash, mostrar la galería de selección
+setTimeout(()=>{
+  const s=document.getElementById("splash");
+  if(s){ s.classList.add("hide"); setTimeout(()=>s.remove(),650); }
+  showCharSelect();
+}, 850);
 </script>
 </body>
 </html>
