@@ -292,6 +292,16 @@ main{padding:16px 14px 44px;max-width:640px;margin:0 auto}
 .skcount.over{border-color:var(--crimson)} .skcount.over .skc-n{color:var(--crimson)}
 .jrow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid var(--line)}
 .jnote{font-size:11.5px;color:var(--faint);flex:1;min-width:140px}
+.sum-lbl{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);margin:14px 0 7px}
+.sum-opts{display:flex;flex-wrap:wrap;gap:7px}.sum-opts .chip small{opacity:.7;font-weight:500}
+.chip.on{color:var(--gold);border-color:var(--gold)}
+.sum-sub{margin:-6px 0 10px;font-size:13px;color:var(--muted)}
+.sum-hp{display:flex;align-items:center;gap:10px;margin:4px 0 12px}.sum-hpv{flex:1;text-align:center;font-size:15px;color:var(--muted)}.sum-hpv b{font-size:26px;color:var(--text);font-family:'Cinzel',serif}
+.sum-abil{display:grid;grid-template-columns:repeat(6,1fr);gap:5px;margin:10px 0 12px}
+.sum-abil div{display:flex;flex-direction:column;align-items:center;padding:7px 2px;border:1px solid var(--line);border-radius:9px;background:var(--bg2)}
+.sum-abil b{font-size:10px;color:var(--faint);letter-spacing:.06em}.sum-abil span{font-size:16px;font-weight:700}.sum-abil small{font-size:11px;color:var(--gold)}
+.sum-act{display:flex;flex-direction:column;gap:5px;padding:9px 0;border-top:1px solid var(--line)}.sum-act .m{font-size:13px;color:var(--muted);line-height:1.5}.sum-act .chip{align-self:flex-start}
+.sum-rule{margin-top:12px}.sum-src{font-size:11px;color:var(--faint);margin:6px 0 8px}
 .bg-toggle{cursor:pointer;user-select:none}.bg-closed .card-h{margin-bottom:0}.bg-chev{color:var(--gold);margin-left:4px}
 .feat-en{font-weight:400;font-size:11.5px;color:var(--faint);font-style:italic;margin-left:3px;font-family:inherit}
 .ssrc{margin-top:12px;padding-top:10px;border-top:1px solid var(--line);font-size:11px;color:var(--faint);line-height:1.55}
@@ -824,6 +834,7 @@ const SPELL_INFO = {
 "Speak with Plants":{a:"Acción",r:"Personal (30 pies)",d:"10 min",c:0,t:"",dm:"Sin daño",e:"Hablas con plantas: te informan de lo que pasó cerca, y pueden despejar terreno. Exploración.",k:"V, S"},
 "Spirit Guardians":{a:"Acción",r:"Personal (15 pies)",d:"Conc. 10 min",c:1,t:"Salv. SAB",dm:"3d8 radiante/necrótico",e:"Espíritus giran a 15 pies de ti: terreno difícil para enemigos y les hacen 3d8 (mitad si salvan) al entrar o empezar turno. Aura de daño top para clérigos. Sube: +1d8 por nivel.",k:"V, S, M"},
 "Stinking Cloud":{a:"Acción",r:"90 pies",d:"Conc. 1 min",c:1,t:"Salv. CON",dm:"Sin daño",e:"Nube nauseabunda de 20 pies: quien falle pierde su acción vomitando. Control (les quita turnos).",k:"V, S, M"},
+"Summon Fiend":{a:"Acción",r:"90 pies",d:"Conc. 1 hora",c:1,t:"",dm:"Según el espíritu",e:"Invocas un espíritu Infernal (Fiendish Spirit) en un espacio libre que veas. Eliges Demon, Devil o Yugoloth. Es tu aliado, actúa justo después de tu turno y obedece tus órdenes verbales sin que gastes acción; si no le ordenas nada, usa Dodge. Desaparece al llegar a 0 PV o al terminar el conjuro. Usa el botón Invocar para ver su ficha calculada.",up:"El espíritu usa el nivel del espacio en su ficha",k:"V, S, M (600+ po)"},
 "Summon Fey":{a:"Acción",r:"90 pies",d:"Conc. 1 hora",c:1,t:"",dm:"Según el feérico",e:"Invocas un espíritu feérico que lucha contigo. Componente de 300 po. Sube su poder por nivel.",k:"V, S, M (300+ po)"},
 "Summon Undead":{a:"Acción",r:"90 pies",d:"Conc. 1 hora",c:1,t:"",dm:"Según el no-muerto",e:"Invocas un espíritu no-muerto (espectro, esqueleto o fantasma) que lucha contigo. Componente de 300 po. Sube por nivel.",k:"V, S, M (300+ po)"},
 "Tongues":{a:"Acción",r:"Toque",d:"1 hora",c:0,t:"",dm:"Sin daño",e:"El objetivo entiende y habla cualquier idioma por 1 hora. Utilidad social.",k:"V, M"},
@@ -1837,6 +1848,7 @@ function longRest(){
   (C.resources||[]).forEach(r=>{ r.used=0; });
   featsWithUses().forEach(f=>{ setFeatUsed(f.name,0); });
   if(C.death){ C.death.ok=0; C.death.fail=0; }
+  (C.summons||[]).forEach(x=>{ x.used={}; });  // usos de invocaciones que vuelven con descanso largo o al día
   C.buffs={}; // efectos temporales (Arma Sagrada, etc.) terminan al descansar
   save(); renderMain(); toast("Descanso largo: PV, espacios y usos recuperados");
 }
@@ -2272,6 +2284,243 @@ function renderPicker(){
   if(!count) body.innerHTML='<p class="muted-note">Nada que coincida, o ya tienes todos los de este filtro.</p>';
 }
 
+/* ============================================================ INVOCACIONES
+   Fichas de criaturas invocadas por conjuros (reglas 2024). Resúmenes propios en español.
+   Otherworldly Steed y Draconic Spirit: SRD 5.2.1. El resto: Player's Handbook 2024.
+   "L" = nivel del espacio con que se lanzó. El bono de ataque y la CD salen de los tuyos. */
+const SPIRIT_RULE = "Comparte tu iniciativa pero actúa justo después de ti. Obedece tus órdenes verbales sin que gastes acción; si no le ordenas nada, usa Dodge y se mueve para evitar el peligro. Desaparece al llegar a 0 PV o cuando termina el conjuro.";
+const half = L => Math.floor(L/2);
+const SUMMONS = {
+ "Find Steed": { creature:"Otherworldly Steed", base:2, src:"SRD 5.2.1",
+   size:"Grande", ctype:f=>f, choices:[{k:"form",label:"Tipo de corcel",opts:["Celestial","Fey","Fiend"]}],
+   ac:L=>10+L, hp:L=>5+10*L, hd:L=>L+"d10",
+   speed:L=>"60 pies"+(L>=4?", Fly 60 pies":""),
+   abil:[18,12,14,6,12,8], senses:"Passive Perception 11", lang:"Telepatía a 1 milla (solo contigo)",
+   rule:"Es tu aliado y el de tus aliados. Comparte tu iniciativa y, mientras lo montas, funciona como montura controlada. Si quedas Incapacitado, actúa justo después de ti por su cuenta, protegiéndote. Desaparece si llega a 0 PV o si mueres (deja lo que llevaba). Si lo vuelves a invocar, eliges si vuelve el mismo u otro.",
+   traits:[{n:"Life Bond",e:"Cuando recuperas PV con un conjuro de nivel 1 o más, el corcel recupera la misma cantidad si estás a 5 pies de él."}],
+   actions:[{n:"Otherworldly Slam",atk:1,e:(L,c)=>"Ataque cuerpo a cuerpo, alcance 5 pies. Impacto: 1d8 + "+L+" de daño "+({Celestial:"radiante",Fey:"psíquico",Fiend:"necrótico"})[c.form]+"."}],
+   bonus:[
+     {n:"Healing Touch",only:"Celestial",use:"long",e:L=>"Una criatura a 5 pies del corcel recupera 2d8 + "+L+" PV. Se recupera con un descanso largo."},
+     {n:"Fey Step",only:"Fey",use:"long",e:()=>"El corcel se teletransporta, junto con su jinete, a un espacio libre que elijas a 60 pies o menos. Se recupera con un descanso largo."},
+     {n:"Fell Glare",only:"Fiend",use:"long",save:1,e:()=>"Salvación de Sabiduría contra tu Spell DC de una criatura que el corcel vea a 60 pies. Si falla, queda Asustada hasta el final de tu siguiente turno. Se recupera con un descanso largo."}
+   ]},
+ "Summon Celestial": { creature:"Celestial Spirit", base:5,
+   size:"Grande", ctype:()=>"Celestial", choices:[{k:"form",label:"Forma",opts:["Avenger","Defender"]}],
+   ac:(L,c)=>11+L+(c.form==="Defender"?2:0), hp:L=>40+10*(L-5),
+   speed:()=>"30 pies, Fly 40 pies", abil:[16,14,16,10,14,16],
+   res:"Radiante", imm:"Hechizado, Asustado", senses:"Darkvision 60 pies, Passive Perception 12", lang:"Celestial, entiende los idiomas que tú sabes",
+   actions:[
+     {n:"Multiattack",e:L=>"Hace "+half(L)+" ataques."},
+     {n:"Radiant Bow",only:"Avenger",atk:1,e:L=>"Ataque a distancia, alcance 600 pies. Impacto: 2d6 + "+(2+L)+" de daño radiante."},
+     {n:"Radiant Mace",only:"Defender",atk:1,e:L=>"Ataque cuerpo a cuerpo, alcance 5 pies. Impacto: 1d10 + "+(3+L)+" de daño radiante, y el espíritu o otra criatura que vea a 10 pies del objetivo gana 1d10 PV temporales."},
+     {n:"Healing Touch",use:"day",e:L=>"Toca a otra criatura, que recupera 2d8 + "+L+" PV. 1 vez al día."}
+   ]},
+ "Summon Dragon": { creature:"Draconic Spirit", base:5, src:"SRD 5.2.1",
+   size:"Grande", ctype:()=>"Dragón",
+   choices:[{k:"form",label:"Tipo de daño del aliento",opts:["Ácido","Frío","Fuego","Rayo","Veneno"]},{k:"res",label:"Resistencia que compartes contigo",opts:["Ácido","Frío","Fuego","Rayo","Veneno"]}],
+   ac:L=>14+L, hp:L=>50+10*(L-5), speed:()=>"30 pies, Fly 60 pies, Swim 30 pies", abil:[19,14,17,10,14,14],
+   res:"Ácido, frío, fuego, rayo, veneno", imm:"Hechizado, Asustado, Envenenado", senses:"Blindsight 30 pies, Darkvision 60 pies, Passive Perception 12", lang:"Dracónico, entiende los idiomas que tú sabes",
+   traits:[{n:"Shared Resistances",e:(L,c)=>"Mientras dure el conjuro, tú también tienes Resistencia al daño de "+c.res.toLowerCase()+"."}],
+   actions:[
+     {n:"Multiattack",e:L=>"Hace "+half(L)+" ataques de Rend y usa Breath Weapon."},
+     {n:"Rend",atk:1,e:L=>"Ataque cuerpo a cuerpo, alcance 10 pies. Impacto: 1d6 + "+(4+L)+" de daño perforante."},
+     {n:"Breath Weapon",save:1,e:(L,c)=>"Salvación de Destreza contra tu Spell DC de cada criatura en un cono de 30 pies. Falla: 2d6 de daño de "+c.form.toLowerCase()+". Éxito: la mitad."}
+   ]},
+ "Summon Beast": { creature:"Bestial Spirit", base:2,
+   size:"Pequeño", ctype:()=>"Bestia", choices:[{k:"form",label:"Entorno",opts:["Air","Land","Water"]}],
+   ac:L=>11+L, hp:(L,c)=>(c.form==="Air"?20:30)+5*(L-2),
+   speed:(L,c)=>"30 pies"+({Air:", Fly 60 pies",Land:", Climb 30 pies",Water:", Swim 30 pies"})[c.form], abil:[18,11,16,4,14,5],
+   senses:"Darkvision 60 pies, Passive Perception 12", lang:"Entiende los idiomas que tú sabes",
+   traits:[
+     {n:"Flyby",only:"Air",e:()=>"No provoca ataques de oportunidad cuando sale volando del alcance de un enemigo."},
+     {n:"Pack Tactics",only:["Land","Water"],e:()=>"Tiene Ventaja al atacar a una criatura si un aliado suyo no Incapacitado está a 5 pies de ella."},
+     {n:"Water Breathing",only:"Water",e:()=>"Solo puede respirar bajo el agua."}
+   ],
+   actions:[{n:"Multiattack",e:L=>"Hace "+half(L)+" ataques de Rend."},{n:"Rend",atk:1,e:L=>"Ataque cuerpo a cuerpo, alcance 5 pies. Impacto: 1d8 + "+(4+L)+" de daño perforante."}]},
+ "Summon Fey": { creature:"Fey Spirit", base:3,
+   size:"Pequeño", ctype:()=>"Feérico", choices:[{k:"form",label:"Ánimo",opts:["Fuming","Mirthful","Tricksy"]}],
+   ac:L=>12+L, hp:L=>30+10*(L-3), speed:()=>"30 pies, Fly 30 pies", abil:[13,16,14,14,11,16],
+   imm:"Hechizado", senses:"Darkvision 60 pies, Passive Perception 10", lang:"Silvano, entiende los idiomas que tú sabes",
+   actions:[{n:"Multiattack",e:L=>"Hace "+half(L)+" ataques de Fey Blade."},{n:"Fey Blade",atk:1,e:L=>"Ataque cuerpo a cuerpo, alcance 5 pies. Impacto: 2d6 + "+(3+L)+" de daño de fuerza."}],
+   bonus:[{n:"Fey Step",e:(L,c)=>"Se teletransporta hasta 30 pies a un espacio libre que vea. Luego: "+({Fuming:"tiene Ventaja en su siguiente tirada de ataque antes de que acabe este turno.",Mirthful:"una criatura que vea a 10 pies hace una salvación de Sabiduría contra tu Spell DC; si falla, queda Hechizada por ti y el espíritu durante 1 minuto o hasta que reciba daño.",Tricksy:"llena de Oscuridad mágica un cubo de 10 pies a 5 pies de él, hasta el final de su siguiente turno."})[c.form]}]},
+ "Summon Undead": { creature:"Undead Spirit", base:3,
+   size:"Mediano", ctype:()=>"No muerto", choices:[{k:"form",label:"Forma",opts:["Ghostly","Putrid","Skeletal"]}],
+   ac:L=>11+L, hp:(L,c)=>(c.form==="Skeletal"?20:30)+10*(L-3), speed:(L,c)=>"30 pies"+(c.form==="Ghostly"?", Fly 40 pies (hover)":""), abil:[12,16,15,4,10,9],
+   imm:"Necrótico, veneno; Agotamiento, Asustado, Paralizado, Envenenado", senses:"Darkvision 60 pies, Passive Perception 10", lang:"Entiende los idiomas que tú sabes",
+   traits:[
+     {n:"Festering Aura",only:"Putrid",save:1,e:()=>"Cualquier criatura (salvo tú) que empiece su turno a 5 pies del espíritu hace una salvación de Constitución contra tu Spell DC; si falla, queda Envenenada hasta el inicio de su siguiente turno."},
+     {n:"Incorporeal Passage",only:"Ghostly",e:()=>"Atraviesa criaturas y objetos como terreno difícil. Si termina su turno dentro de un objeto, sale al espacio libre más cercano y recibe 1d10 de fuerza por cada 5 pies."}
+   ],
+   actions:[
+     {n:"Multiattack",e:L=>"Hace "+half(L)+" ataques."},
+     {n:"Deathly Touch",only:"Ghostly",atk:1,e:L=>"Cuerpo a cuerpo, alcance 5 pies. Impacto: 1d8 + "+(3+L)+" de daño necrótico y el objetivo queda Asustado hasta el final de su siguiente turno."},
+     {n:"Grave Bolt",only:"Skeletal",atk:1,e:L=>"A distancia, alcance 150 pies. Impacto: 2d4 + "+(3+L)+" de daño necrótico."},
+     {n:"Rotting Claw",only:"Putrid",atk:1,e:L=>"Cuerpo a cuerpo, alcance 5 pies. Impacto: 1d6 + "+(3+L)+" de daño cortante. Si el objetivo está Envenenado, queda Paralizado hasta el final de su siguiente turno."}
+   ]},
+ "Summon Aberration": { creature:"Aberrant Spirit", base:4,
+   size:"Mediano", ctype:()=>"Aberración", choices:[{k:"form",label:"Tipo",opts:["Beholderkin","Mind Flayer","Slaad"]}],
+   ac:L=>11+L, hp:L=>40+10*(L-4), speed:(L,c)=>"30 pies"+(c.form==="Beholderkin"?", Fly 30 pies (hover)":""), abil:[16,10,15,16,10,6],
+   imm:"Psíquico", senses:"Darkvision 60 pies, Passive Perception 10", lang:"Habla Profunda, entiende los idiomas que tú sabes",
+   traits:[
+     {n:"Regeneration",only:"Slaad",e:()=>"Recupera 5 PV al inicio de su turno si tiene al menos 1 PV."},
+     {n:"Whispering Aura",only:"Mind Flayer",save:1,e:()=>"Al inicio de cada turno suyo, si no está Incapacitado, cada criatura (salvo tú) a 5 pies hace una salvación de Sabiduría contra tu Spell DC; si falla, recibe 2d6 de daño psíquico."}
+   ],
+   actions:[
+     {n:"Multiattack",e:L=>"Hace "+half(L)+" ataques."},
+     {n:"Claw",only:"Slaad",atk:1,e:L=>"Cuerpo a cuerpo, alcance 5 pies. Impacto: 1d10 + "+(3+L)+" de daño cortante, y el objetivo no puede recuperar PV hasta el inicio del siguiente turno del espíritu."},
+     {n:"Eye Ray",only:"Beholderkin",atk:1,e:L=>"A distancia, alcance 150 pies. Impacto: 1d8 + "+(3+L)+" de daño psíquico."},
+     {n:"Psychic Slam",only:"Mind Flayer",atk:1,e:L=>"Cuerpo a cuerpo, alcance 5 pies. Impacto: 1d8 + "+(3+L)+" de daño psíquico."}
+   ]},
+ "Summon Construct": { creature:"Construct Spirit", base:4,
+   size:"Mediano", ctype:()=>"Constructo", choices:[{k:"form",label:"Material",opts:["Clay","Metal","Stone"]}],
+   ac:L=>13+L, hp:L=>40+15*(L-4), speed:()=>"30 pies", abil:[18,10,18,14,11,5],
+   res:"Veneno", imm:"Hechizado, Agotamiento, Asustado, Paralizado, Envenenado", senses:"Darkvision 60 pies, Passive Perception 10", lang:"Entiende los idiomas que tú sabes",
+   traits:[
+     {n:"Heated Body",only:"Metal",e:()=>"Una criatura que lo impacta cuerpo a cuerpo, o que empieza su turno agarrándolo, recibe 1d10 de daño de fuego."},
+     {n:"Stony Lethargy",only:"Stone",save:1,e:()=>"Cuando una criatura que vea empieza su turno a 10 pies, puede obligarla a una salvación de Sabiduría contra tu Spell DC; si falla, hasta el inicio de su siguiente turno no puede hacer ataques de oportunidad y su Speed se reduce a la mitad."}
+   ],
+   actions:[{n:"Multiattack",e:L=>"Hace "+half(L)+" ataques de Slam."},{n:"Slam",atk:1,e:L=>"Cuerpo a cuerpo, alcance 5 pies. Impacto: 1d8 + "+(4+L)+" de daño contundente."}],
+   reactions:[{n:"Berserk Lashing",only:"Clay",e:()=>"Cuando recibe daño de una criatura, le hace un ataque de Slam si puede, o se mueve hasta la mitad de su Speed hacia ella sin provocar ataques de oportunidad."}]},
+ "Summon Elemental": { creature:"Elemental Spirit", base:4,
+   size:"Mediano", ctype:()=>"Elemental", choices:[{k:"form",label:"Elemento",opts:["Air","Earth","Fire","Water"]}],
+   ac:L=>11+L, hp:L=>50+10*(L-4),
+   speed:(L,c)=>"40 pies"+({Air:", Fly 40 pies (hover)",Earth:", Burrow 40 pies",Fire:"",Water:", Swim 40 pies"})[c.form], abil:[18,15,17,4,10,16],
+   res:(L,c)=>({Air:"Rayo, trueno",Earth:"Perforante, cortante",Fire:"",Water:"Ácido"})[c.form],
+   imm:(L,c)=>(c.form==="Fire"?"Fuego, ":"")+"veneno; Agotamiento, Paralizado, Petrificado, Envenenado",
+   senses:"Darkvision 60 pies, Passive Perception 10", lang:"Primordial, entiende los idiomas que tú sabes",
+   traits:[{n:"Amorphous Form",only:["Air","Fire","Water"],e:()=>"Puede pasar por un espacio de 1 pulgada de ancho sin que cuente como terreno difícil."}],
+   actions:[{n:"Multiattack",e:L=>"Hace "+half(L)+" ataques de Slam."},{n:"Slam",atk:1,e:(L,c)=>"Cuerpo a cuerpo, alcance 5 pies. Impacto: 1d10 + "+(4+L)+" de daño "+({Air:"de rayo",Earth:"contundente",Fire:"de fuego",Water:"de frío"})[c.form]+"."}]},
+ "Summon Fiend": { creature:"Fiendish Spirit", base:6,
+   size:"Grande", ctype:()=>"Infernal", choices:[{k:"form",label:"Tipo",opts:["Demon","Devil","Yugoloth"]}],
+   ac:L=>12+L, hp:(L,c)=>({Demon:50,Devil:40,Yugoloth:60})[c.form]+15*(L-6),
+   speed:(L,c)=>"40 pies"+({Demon:", Climb 40 pies",Devil:", Fly 60 pies",Yugoloth:""})[c.form], abil:[13,16,15,10,10,16],
+   res:"Fuego", imm:"Veneno; Envenenado", senses:"Darkvision 60 pies, Passive Perception 10", lang:"Abisal, Infernal, telepatía 60 pies",
+   traits:[
+     {n:"Death Throes",only:"Demon",save:1,e:L=>"Cuando llega a 0 PV o termina el conjuro, explota: cada criatura a 10 pies hace una salvación de Destreza contra tu Spell DC. Falla: 2d10 + "+L+" de fuego. Éxito: la mitad."},
+     {n:"Devil's Sight",only:"Devil",e:()=>"La Oscuridad mágica no le impide ver con Darkvision."},
+     {n:"Magic Resistance",e:()=>"Tiene Ventaja en las salvaciones contra conjuros y otros efectos mágicos."}
+   ],
+   actions:[
+     {n:"Multiattack",e:L=>"Hace "+half(L)+" ataques."},
+     {n:"Bite",only:"Demon",atk:1,e:L=>"Cuerpo a cuerpo, alcance 5 pies. Impacto: 1d12 + "+(3+L)+" de daño necrótico."},
+     {n:"Claws",only:"Yugoloth",atk:1,e:L=>"Cuerpo a cuerpo, alcance 5 pies. Impacto: 1d8 + "+(3+L)+" de daño cortante. Justo después, impacte o falle, puede teletransportarse hasta 30 pies."},
+     {n:"Fiery Strike",only:"Devil",atk:1,e:L=>"Cuerpo a cuerpo (5 pies) o a distancia (150 pies). Impacto: 2d6 + "+(3+L)+" de daño de fuego."}
+   ]}
+};
+const SUMMON_ABIL=["STR","DEX","CON","INT","WIS","CHA"];
+const sForm=(x,c)=> !x.only || (Array.isArray(x.only)? x.only.indexOf(c.form)>=0 : x.only===c.form);
+const sVal=(v,L,c)=> typeof v==="function" ? v(L,c) : v;
+function hasSpell(name){ return (C.spells||[]).some(s=>s.name===name); }
+function summonsOf(){ if(!Array.isArray(C.summons)) C.summons=[]; return C.summons; }
+
+/* Paso 1: elegir forma, nivel del espacio y cómo se paga */
+function openSummonSetup(name){
+  const S=SUMMONS[name]; if(!S) return;
+  const st={ L:S.base, c:{}, pay:null };
+  S.choices.forEach(ch=>st.c[ch.k]=ch.opts[0]);
+  const maxL=Math.max(S.base, spellAccess().max||S.base);
+  const freeSteed = name==="Find Steed" && C.cls==="Paladín" && (+C.level||1)>=5 && featUsed("Corcel Fiel")<1;
+  const draw=()=>{
+    $("#infoTitle").innerHTML=`<span class="info-spell-ic">${spellIcon(SPELL_INFO[name],38)}</span>Invocar: ${esc(S.creature)}`;
+    $("#infoMeta").textContent=esc(name);
+    const b=$("#infoBody"); b.innerHTML="";
+    S.choices.forEach(ch=>{
+      b.appendChild(el("div","sum-lbl",esc(ch.label)));
+      const row=el("div","sum-opts");
+      ch.opts.forEach(o=>{ const x=el("button","chip"+(st.c[ch.k]===o?" gold on":""),esc(o)); x.onclick=()=>{ st.c[ch.k]=o; draw(); }; row.appendChild(x); });
+      b.appendChild(row);
+    });
+    b.appendChild(el("div","sum-lbl","Nivel del espacio"));
+    const lr=el("div","sum-opts");
+    for(let l=S.base;l<=Math.max(maxL,S.base);l++){
+      const left=(C.slots[l]?C.slots[l].max-C.slots[l].used:0);
+      const x=el("button","chip"+(st.L===l?" gold on":""),"Nv "+l+" <small>("+left+" libres)</small>");
+      x.onclick=()=>{ st.L=l; if(st.pay==="free" && l!==2) st.pay=null; draw(); }; lr.appendChild(x);
+    }
+    b.appendChild(lr);
+    const left=(C.slots[st.L]?C.slots[st.L].max-C.slots[st.L].used:0);
+    b.appendChild(el("div","sum-lbl","¿Cómo lo pagas?"));
+    const pr=el("div","sum-opts");
+    const mk=(k,t,dis)=>{ const x=el("button","chip"+(st.pay===k?" gold on":""),t); if(dis){x.disabled=true;x.style.opacity=.45;} x.onclick=()=>{ st.pay=k; if(k==="free") st.L=2; draw(); }; pr.appendChild(x); };
+    mk("slot","Gastar espacio de nivel "+st.L, left<=0);
+    if(freeSteed) mk("free","Gratis (Corcel Fiel)");
+    mk("none","Ya lo marqué / sin gastar");
+    b.appendChild(pr);
+    const hp=S.hp(st.L,st.c);
+    b.appendChild(el("p","muted-note",`Quedará con AC ${S.ac(st.L,st.c)} y ${hp} PV.`+(SPELL_INFO[name]&&SPELL_INFO[name].c?" Requiere concentración.":"")));
+    const go=el("button","btn gold wide","Invocar"); go.style.marginTop="12px";
+    if(!st.pay){ go.disabled=true; go.style.opacity=.5; }
+    go.onclick=()=>{
+      if(st.pay==="slot"){ C.slots[st.L].used++; }
+      if(st.pay==="free"){ setFeatUsed("Corcel Fiel", featUsed("Corcel Fiel")+1); }
+      const arr=summonsOf();
+      if(name==="Find Steed"){ for(let i=arr.length-1;i>=0;i--) if(arr[i].spell==="Find Steed") arr.splice(i,1); }   // solo un corcel a la vez
+      arr.push({id:uid(), spell:name, L:st.L, c:st.c, hp:hp, temp:0, used:{}});
+      save(); closeSheets(); currentTab="summon"; renderTabs(); renderMain();
+      toast(S.creature+" invocado"+(SPELL_INFO[name]&&SPELL_INFO[name].c?" · mantén la concentración":""));
+    };
+    b.appendChild(go);
+  };
+  draw(); openSheet("#infoSheet");
+}
+
+/* Pestaña Invocación */
+function tabSummon(p){
+  const arr=summonsOf();
+  if(!arr.length){ p.appendChild(el("p","muted-note","No tienes invocaciones activas. Ábrelas desde la ficha del conjuro en Magia.")); return; }
+  arr.forEach((s,idx)=>{
+    const S=SUMMONS[s.spell]; if(!S) return;
+    const L=s.L, c=s.c, max=S.hp(L,c);
+    const card=el("div","card sum-card");
+    const tag = c.form ? esc(c.form) : "";
+    card.appendChild(el("div","card-h",`<span class="eyebrow">${esc(S.creature)}</span><span class="muted-note">${esc(s.spell)} · Nv ${L}${SPELL_INFO[s.spell]&&SPELL_INFO[s.spell].c?' · <b style="color:var(--violet)">Conc.</b>':''}</span>`));
+    card.appendChild(el("p","sum-sub",`${S.size} ${esc(S.ctype(c.form))}${tag&&S.ctype(c.form)!==c.form?" · "+tag:""}${c.res?" · comparte "+esc(c.res.toLowerCase()):""}`));
+    // PV
+    const hpRow=el("div","sum-hp");
+    const minus=el("button","bgstep","−"), plus=el("button","bgstep","+");
+    const val=el("div","sum-hpv",`<b>${s.hp}</b> / ${max} PV`);
+    minus.onclick=()=>promptBox("Daño recibido por "+S.creature+":", "", v=>{ const n=+v||0; s.hp=Math.max(0,s.hp-n); save(); if(s.hp===0){ confirmBox(S.creature+" llegó a 0 PV y desaparece. ¿Quitarlo?", ()=>{ arr.splice(idx,1); save(); if(!arr.length) currentTab="magic"; renderTabs(); renderMain(); }); } renderMain(); });
+    plus.onclick=()=>promptBox("PV que recupera "+S.creature+":", "", v=>{ s.hp=Math.min(max,s.hp+(+v||0)); save(); renderMain(); });
+    hpRow.appendChild(minus); hpRow.appendChild(val); hpRow.appendChild(plus);
+    card.appendChild(hpRow);
+    // stats
+    const st=el("div","stat-strip");
+    st.innerHTML=`<div class="stat-pill"><div class="v">${S.ac(L,c)}</div><div class="k">AC</div></div>
+      <div class="stat-pill"><div class="v gold">${fmt(spellAtk())}</div><div class="k">Ataque</div></div>
+      <div class="stat-pill"><div class="v violet">${spellDC()}</div><div class="k">Spell DC</div></div>`;
+    card.appendChild(st);
+    const ab=el("div","sum-abil");
+    ab.innerHTML=S.abil.map((v,i)=>`<div><b>${SUMMON_ABIL[i]}</b><span>${v}</span><small>${fmt(Math.floor((v-10)/2))}</small></div>`).join("");
+    card.appendChild(ab);
+    const kv=(k,v)=>v?`<div class="sr"><div class="sk">${k}</div><div class="sv">${esc(v)}</div></div>`:"";
+    card.appendChild(el("div","sgrid",
+      kv("Speed",sVal(S.speed,L,c))+(S.hd?kv("Hit Dice",S.hd(L)):"")+kv("Resistencias",sVal(S.res,L,c))+kv("Inmunidades",sVal(S.imm,L,c))+kv("Sentidos",S.senses)+kv("Idiomas",S.lang)+kv("Competencia",fmt(PB())+" (tu bono)")+kv("Salvaciones","Igual a sus modificadores")));
+    const sec=(title,list)=>{
+      const L2=(list||[]).filter(x=>sForm(x,c)); if(!L2.length) return;
+      card.appendChild(el("div","sum-lbl",title));
+      L2.forEach(x=>{
+        const it=el("div","sum-act");
+        let extra=""; if(x.atk) extra=' <span class="svtag act">'+fmt(spellAtk())+' al ataque</span>'; if(x.save) extra+=' <span class="svtag act">CD '+spellDC()+'</span>';
+        it.innerHTML=`<div><b>${esc(x.n)}</b>${extra}</div><div class="m">${esc(sVal(x.e,L,c))}</div>`;
+        if(x.use){
+          const used=!!s.used[x.n];
+          const u=el("button","chip"+(used?"":" gold on"),used?"Usado":"Disponible");
+          u.onclick=()=>{ s.used[x.n]=!used; save(); renderMain(); };
+          it.appendChild(u);
+        }
+        card.appendChild(it);
+      });
+    };
+    sec("Rasgos",S.traits); sec("Acciones",S.actions); sec("Bonus Actions",S.bonus); sec("Reacciones",S.reactions);
+    card.appendChild(el("p","muted-note sum-rule",esc(S.rule||SPIRIT_RULE)));
+    card.appendChild(el("p","sum-src","Fuente: "+(S.src||"Player's Handbook (2024)")+". Resumen propio, no es el texto del libro."));
+    const off=el("button","btn wide","Desactivar invocación"); off.style.marginTop="6px";
+    off.onclick=()=>confirmBox("¿Terminar "+S.creature+"? La pestaña desaparece si no quedan invocaciones.", ()=>{ arr.splice(idx,1); save(); if(!arr.length) currentTab="magic"; renderTabs(); renderMain(); });
+    card.appendChild(off);
+    p.appendChild(card);
+  });
+}
+
 /* ============================================================ TABS */
 const TABS = [["core","Aptitudes"],["traits","Rasgos"],["combat","Combate"],["magic","Magia"],["gear","Equipo"],["notes","Notas"]];
 
@@ -2287,16 +2536,21 @@ function renderHeader(){
 }
 function renderTabs(){
   const nav=$("#tabs"); nav.innerHTML="";
-  TABS.forEach(([id,label])=>{
+  const hasSum = Array.isArray(C.summons) && C.summons.length>0;
+  if(!hasSum && currentTab==="summon") currentTab="magic";
+  const list = hasSum ? TABS.concat([["summon","Invocación"]]) : TABS;
+  list.forEach(([id,label])=>{
     const b=el("button","tab"+(currentTab===id?" active":""),label);
     b.onclick=()=>{ currentTab=id; renderTabs(); renderMain(); };
     nav.appendChild(b);
   });
+  const act=nav.querySelector(".tab.active"); if(act&&act.scrollIntoView) try{ act.scrollIntoView({inline:"center",block:"nearest"}); }catch(_){}
 }
 function renderMain(){
   const m=$("#main"); m.innerHTML="";
   const panel=el("div","tab-panel");
-  ({core:tabCore,traits:tabTraits,combat:tabCombat,magic:tabMagic,gear:tabGear,notes:tabNotes})[currentTab](panel);
+  if(currentTab==="summon" && !(Array.isArray(C.summons)&&C.summons.length)) currentTab="magic";
+  ({core:tabCore,traits:tabTraits,combat:tabCombat,magic:tabMagic,gear:tabGear,notes:tabNotes,summon:tabSummon})[currentTab](panel);
   m.appendChild(panel);
   renderHeader();
 }
@@ -2892,7 +3146,17 @@ function showSpellInfo(name,level){
        ${up?row("Slot superior",up,"scale"):""}
      </div>
      <p class="seff">${esc(info.e)}</p>
+     ${SUMMONS[name]?'<div id="sumBtnWrap"></div>':''}
      <div class="ssrc">${info.v?'<span class="sver ok">✓ Revisado contra el texto de las reglas 2024</span>':'<span class="sver">Resumen sin revisar línea por línea: confirma los detalles en tu manual</span>'}<br>${esc(spellSource(name))}</div>`;
+  if(SUMMONS[name]){
+    const w=$("#sumBtnWrap");
+    const active=summonsOf().filter(x=>x.spell===name).length;
+    if(hasSpell(name)){
+      const bt=el("button","btn gold wide",(active?"Invocar otra vez":"Invocar")+": "+esc(SUMMONS[name].creature)); bt.style.marginTop="12px";
+      bt.onclick=()=>openSummonSetup(name); w.appendChild(bt);
+      if(active){ const g=el("button","btn wide","Ver invocación activa"); g.style.marginTop="8px"; g.onclick=()=>{ closeSheets(); currentTab="summon"; renderTabs(); renderMain(); }; w.appendChild(g); }
+    } else w.appendChild(el("p","muted-note","Prepara este conjuro para poder invocar su criatura desde aquí."));
+  }
   openSheet("#infoSheet");
 }
 function cycleCastAbility(){
