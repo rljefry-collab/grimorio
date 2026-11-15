@@ -444,9 +444,9 @@ main{padding:16px 14px 44px;max-width:640px;margin:0 auto}
 .sync-dot.on{background:var(--sage)} .sync-dot.sync{background:var(--gold);animation:pulse 1s infinite} .sync-dot.err{background:var(--crimson)}
 @keyframes pulse{50%{opacity:.3}}
 
-.toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 24px);transform:translateX(-50%) translateY(20px);background:var(--raised);border:1px solid var(--line2);color:var(--text);padding:11px 18px;border-radius:12px;font-size:14px;font-weight:500;box-shadow:var(--shadow);z-index:60;opacity:0;pointer-events:none;transition:all .25s;max-width:90vw}
+.toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 24px);transform:translateX(-50%) translateY(20px);background:var(--raised);border:1px solid var(--line2);color:var(--text);padding:11px 18px;border-radius:12px;font-size:14px;font-weight:500;box-shadow:var(--shadow);z-index:130;opacity:0;pointer-events:none;transition:all .25s;max-width:90vw}
 .toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
-.modal-scrim{position:fixed;inset:0;z-index:70;background:rgba(0,0,0,.6);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;padding:24px;animation:modalIn .15s ease}
+.modal-scrim{position:fixed;inset:0;z-index:120;background:rgba(0,0,0,.6);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;padding:24px;animation:modalIn .15s ease}
 @keyframes modalIn{from{opacity:0}to{opacity:1}}
 .modal-box{width:100%;max-width:360px;background:var(--bg2,var(--raised));border:1px solid var(--gold-dim);border-radius:16px;padding:20px 18px;box-shadow:var(--shadow)}
 .modal-msg{color:var(--text);font-size:15px;line-height:1.5;margin:0 0 16px;text-align:center}
@@ -2265,7 +2265,7 @@ function renderPicker(){
       const it=el("div","item");
       it.innerHTML=`<span class="spell-ic">${spellIcon(info,34)}</span><div class="ic"><div class="t">${esc(name)} <span class="tag">${l===0?"Cantrip":"Lv "+l}</span></div><div class="m">${dmg}${info?esc(info.e):"Resumen pendiente"}${flags.length?" · "+flags.join(" · "):""}</div></div>`;
       const add=el("button","del"); add.innerHTML=ICON.plus; add.style.color="var(--sage)"; add.setAttribute("aria-label","Añadir "+name);
-      add.onclick=()=>{ if(l===0) C.cantrips.push({name}); else C.spells.push({name,level:l,note:""}); save(); toast(name+" añadido"); renderPicker(); renderHeader(); };
+      add.onclick=()=>{ if(l===0) C.cantrips.push({name}); else C.spells.push({name,level:l,note:""}); save(); toast(name+" añadido"); renderPicker(); renderMain(); renderHeader(); };
       it.appendChild(add); body.appendChild(it);
     });
   }
@@ -3258,8 +3258,11 @@ function editPrompt(label,val,set,isText){
 const esc = s => (s||"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 
 /* ============================================================ CHARACTER MANAGER */
+let _refreshT=null;
+function refreshSoon(){ clearTimeout(_refreshT); _refreshT=setTimeout(()=>{ try{ if(C && !$("#charSelect").classList.contains("on")){ renderMain(); renderHeader(); } }catch(_){} },0); }
 function openSheet(id){ $("#scrim").classList.add("on"); $(id).classList.add("on"); }
-function closeSheets(){ $("#scrim").classList.remove("on"); $("#charSheet").classList.remove("on"); $("#menuSheet").classList.remove("on"); $("#infoSheet").classList.remove("on"); $("#pickerSheet").classList.remove("on"); $("#featSheet").classList.remove("on"); $("#acSheet").classList.remove("on"); $("#weaponSheet").classList.remove("on"); $("#recSheet").classList.remove("on"); }
+/* Al cerrar cualquier hoja se redibuja la pantalla, para que lo que cambiaste ahí se vea sin cambiar de pestaña. */
+function closeSheets(){ refreshSoon(); $("#scrim").classList.remove("on"); $("#charSheet").classList.remove("on"); $("#menuSheet").classList.remove("on"); $("#infoSheet").classList.remove("on"); $("#pickerSheet").classList.remove("on"); $("#featSheet").classList.remove("on"); $("#acSheet").classList.remove("on"); $("#weaponSheet").classList.remove("on"); $("#recSheet").classList.remove("on"); }
 $("#scrim").onclick=closeSheets;
 $("#infoClose").onclick=closeSheets;
 $("#pickerClose").onclick=closeSheets;
